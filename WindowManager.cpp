@@ -26,6 +26,8 @@ namespace engine {
         if (!m_window) {
             throw std::runtime_error(initErrorMessage);
         }
+
+        centerWindow();
     }
 
     WindowManager::~WindowManager() {
@@ -47,6 +49,14 @@ namespace engine {
     const char **WindowManager::getVulkanRequiredExtensions(std::uint32_t *extensionsCount) {
         const char** glfwExtensions = glfwGetRequiredInstanceExtensions(extensionsCount);
         return glfwExtensions;
+    }
+
+    void WindowManager::centerWindow() {
+        GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+        const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+        int xPos = (mode->width - 800) / 2;
+        int yPos = (mode->height - 600) / 2;
+        glfwSetWindowPos(m_window, xPos, yPos);
     }
 
 } // engine

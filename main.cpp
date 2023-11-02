@@ -3,16 +3,14 @@
 
 #include "VulkanInstanceManager.hpp"
 #include "WindowManager.hpp"
-
-const std::size_t WINDOW_WIDTH = 800;
-const std::size_t WINDOW_HEIGHT = 600;
+#include "ApplicationConfig.h"
 
 class Application {
 public:
     Application()
-            : m_windowManager(WINDOW_WIDTH, WINDOW_HEIGHT, m_name),
-              m_vkInstanceManager(m_name) {
-    }
+            : m_windowManager(ApplicationConfig::WINDOW_WIDTH, ApplicationConfig::WINDOW_HEIGHT,
+                              ApplicationConfig::WINDOW_TITLE),
+              m_vkInstanceManager(ApplicationConfig::WINDOW_TITLE) {}
 
     void run() {
         while (m_windowManager.isOpen()) {
@@ -23,10 +21,7 @@ public:
 private:
     engine::WindowManager m_windowManager;
     engine::VulkanInstanceManager m_vkInstanceManager;
-    const static char *m_name;
 };
-
-const char *Application::m_name = "Hello Triangle";
 
 
 int main() {

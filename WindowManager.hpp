@@ -28,6 +28,8 @@ namespace engine {
         std::size_t m_height;
         std::string m_title;
         GLFWwindow *m_window = nullptr;
+
+        void centerWindow();
     };
 
 } // engine

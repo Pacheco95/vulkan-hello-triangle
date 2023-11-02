@@ -4,27 +4,14 @@
 namespace engine {
     WindowManager::WindowManager(size_t width, size_t height, std::string title)
             : m_width(width), m_height(height),
-              m_title(title) {}
+              m_title(title) {
 
-    WindowManager::~WindowManager() {
-        if (m_window) {
-            glfwDestroyWindow(m_window);
-        }
-
-        glfwTerminate();
-    }
-
-    void WindowManager::open() {
-        if (m_window) {
-            return;
-        }
-
-        const char *initErrorMessage = "Failed to initialize window";
+        const char *initErrorMessage = "Failed to create window";
 
         if (!glfwInit()) {
             throw std::runtime_error(initErrorMessage);
         }
-        
+
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
@@ -39,6 +26,14 @@ namespace engine {
         if (!m_window) {
             throw std::runtime_error(initErrorMessage);
         }
+    }
+
+    WindowManager::~WindowManager() {
+        if (m_window) {
+            glfwDestroyWindow(m_window);
+        }
+
+        glfwTerminate();
     }
 
     bool WindowManager::isOpen() const {

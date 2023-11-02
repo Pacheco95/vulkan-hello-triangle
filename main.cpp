@@ -15,8 +15,6 @@ public:
     }
 
     void run() {
-        m_windowManager.open();
-
         while (m_windowManager.isOpen()) {
             m_windowManager.pollEvents();
         }

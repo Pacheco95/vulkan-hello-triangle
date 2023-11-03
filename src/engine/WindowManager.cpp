@@ -1,7 +1,6 @@
 #include "WindowManager.hpp"
 
 #include <stdexcept>
-#include <utility>
 
 #include "ApplicationConfig.hpp"
 

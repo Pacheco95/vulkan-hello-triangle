@@ -24,12 +24,10 @@ class ValidationLayerManager {
   static VkResult createDebugUtilsMessengerEXT(
       VkInstance instance,
       const VkDebugUtilsMessengerCreateInfoEXT *pCreateInfo,
-      const VkAllocationCallbacks *pAllocator,
       VkDebugUtilsMessengerEXT *pDebugMessenger);
 
   static void destroyDebugUtilsMessengerEXT(
-      VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger,
-      const VkAllocationCallbacks *pAllocator);
+      VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger);
 
   static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
       [[maybe_unused]] VkDebugUtilsMessageSeverityFlagBitsEXT _messageSeverity,

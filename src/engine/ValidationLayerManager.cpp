@@ -111,12 +111,16 @@ void ValidationLayerManager::destroyDebugUtilsMessengerEXT(
 void ValidationLayerManager::fillInstanceValidationLayerDebugInfo(
     VkInstanceCreateInfo &vkInstanceCreateInfo,
     const VkDebugUtilsMessengerCreateInfoEXT &debugCreateInfo) {
-  if (ApplicationConfig::IS_VALIDATION_LAYERS_ENABLED) {
-    vkInstanceCreateInfo.enabledLayerCount =
-        static_cast<uint32_t>(ApplicationConfig::VALIDATION_LAYERS.size());
-    vkInstanceCreateInfo.ppEnabledLayerNames =
-        ApplicationConfig::VALIDATION_LAYERS.data();
-    vkInstanceCreateInfo.pNext = &debugCreateInfo;
+  if (!ApplicationConfig::IS_VALIDATION_LAYERS_ENABLED) {
+    return;
   }
+
+  vkInstanceCreateInfo.enabledLayerCount =
+      static_cast<uint32_t>(ApplicationConfig::VALIDATION_LAYERS.size());
+
+  vkInstanceCreateInfo.ppEnabledLayerNames =
+      ApplicationConfig::VALIDATION_LAYERS.data();
+
+  vkInstanceCreateInfo.pNext = &debugCreateInfo;
 }
 }  // namespace engine

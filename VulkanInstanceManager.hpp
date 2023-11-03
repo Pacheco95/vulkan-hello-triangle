@@ -12,6 +12,9 @@ namespace engine {
 
         virtual ~VulkanInstanceManager();
 
+        [[nodiscard]]
+        bool checkValidationLayerSupport() const;
+
     private:
         VkInstance m_instance;
         std::string m_applicationName;

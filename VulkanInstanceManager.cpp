@@ -1,4 +1,6 @@
 #include <stdexcept>
+#include <cstring>
+#include "ApplicationConfig.hpp"
 #include "VulkanInstanceManager.hpp"
 #include "WindowManager.hpp"
 
@@ -6,6 +8,10 @@ namespace engine {
     VulkanInstanceManager::VulkanInstanceManager(const std::string &applicationName)
             : m_instance(nullptr),
               m_applicationName(applicationName) {
+
+        if (ApplicationConfig::IS_VALIDATION_LAYERS_ENABLED && !checkValidationLayerSupport()) {
+            throw std::runtime_error("One or more validation layers requested not available");
+        }
 
         VkApplicationInfo appInfo{};
         appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -33,4 +39,30 @@ namespace engine {
     VulkanInstanceManager::~VulkanInstanceManager() {
         vkDestroyInstance(m_instance, nullptr);
     }
+
+    bool VulkanInstanceManager::checkValidationLayerSupport() const {
+        uint32_t layerCount;
+        vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
+
+        std::vector<VkLayerProperties> availableLayers(layerCount);
+        vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
+
+        for (const char* layerName : ApplicationConfig::VALIDATION_LAYERS) {
+            bool layerFound = false;
+
+            for (const auto& layerProperties : availableLayers) {
+                if (strcmp(layerName, layerProperties.layerName) == 0) {
+                    layerFound = true;
+                    break;
+                }
+            }
+
+            if (!layerFound) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
 } // engine

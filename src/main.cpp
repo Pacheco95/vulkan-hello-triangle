@@ -5,6 +5,8 @@
 #include "VulkanInstanceManager.hpp"
 #include "WindowManager.hpp"
 
+using engine::ApplicationConfig;
+
 class Application {
  public:
   Application()

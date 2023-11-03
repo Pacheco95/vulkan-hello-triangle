@@ -4,16 +4,18 @@ project(VulkanHelloTriangle)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2")
 
+include_directories("src/engine")
+
 find_package(glfw3 REQUIRED)
 find_package(Vulkan REQUIRED)
 
-add_executable(VulkanHelloTriangle main.cpp
-        VulkanInstanceManager.cpp
-        VulkanInstanceManager.hpp
-        WindowManager.cpp
-        WindowManager.hpp
-        ApplicationConfig.cpp
-        ApplicationConfig.hpp)
+add_executable(VulkanHelloTriangle src/main.cpp
+        src/engine/VulkanInstanceManager.cpp
+        src/engine/VulkanInstanceManager.hpp
+        src/engine/WindowManager.cpp
+        src/engine/WindowManager.hpp
+        src/engine/ApplicationConfig.cpp
+        src/engine/ApplicationConfig.hpp)
 
 target_link_libraries(VulkanHelloTriangle
         PRIVATE

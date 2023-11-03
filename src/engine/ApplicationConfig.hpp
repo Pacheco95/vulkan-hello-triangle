@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <vector>
 
+namespace engine {
 struct ApplicationConfig {
   static const std::size_t WINDOW_WIDTH;
   static const std::size_t WINDOW_HEIGHT;
@@ -11,5 +12,6 @@ struct ApplicationConfig {
   static const std::vector<const char *> VALIDATION_LAYERS;
   static const bool IS_VALIDATION_LAYERS_ENABLED;
 };
+}  // namespace engine
 
 #endif  // APPLICATION_CONFIG_HPP

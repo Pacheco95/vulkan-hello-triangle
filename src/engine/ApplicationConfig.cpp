@@ -1,5 +1,6 @@
 #include "ApplicationConfig.hpp"
 
+namespace engine {
 const std::size_t ApplicationConfig::WINDOW_WIDTH =
     static_cast<std::size_t>(800);
 
@@ -16,3 +17,5 @@ const bool ApplicationConfig::IS_VALIDATION_LAYERS_ENABLED = true;
 
 const std::vector<const char *> ApplicationConfig::VALIDATION_LAYERS{
     "VK_LAYER_KHRONOS_validation"};
+
+}  // namespace engine

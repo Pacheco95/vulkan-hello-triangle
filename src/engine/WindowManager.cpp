@@ -36,7 +36,11 @@ WindowManager::~WindowManager() {
   glfwTerminate();
 }
 
-bool WindowManager::isOpen() const { return !glfwWindowShouldClose(m_window); }
+bool WindowManager::isOpen() const {
+  bool shouldClose = glfwGetKey(m_window, GLFW_KEY_ESCAPE) == GLFW_PRESS;
+  shouldClose = shouldClose || glfwWindowShouldClose(m_window);
+  return !shouldClose;
+}
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "readability-convert-member-functions-to-static"

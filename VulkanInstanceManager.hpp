@@ -18,6 +18,11 @@ namespace engine {
     private:
         VkInstance m_instance;
         std::string m_applicationName;
+        VkDebugUtilsMessengerEXT m_debugMessenger;
+
+        void setupDebugMessenger();
+
+        void createInstance();
     };
 
 }

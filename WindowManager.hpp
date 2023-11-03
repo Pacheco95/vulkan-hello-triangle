@@ -21,7 +21,7 @@ namespace engine {
 
         void pollEvents();
 
-        static const char** getVulkanRequiredExtensions(std::uint32_t *extensionsCount);
+        static std::vector<const char *> getRequiredExtensions();
 
     private:
         std::size_t m_width;

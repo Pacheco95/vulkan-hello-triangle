@@ -1,5 +1,6 @@
 #include <stdexcept>
 #include "WindowManager.hpp"
+#include "ApplicationConfig.hpp"
 
 namespace engine {
     WindowManager::WindowManager(size_t width, size_t height, std::string title)
@@ -46,9 +47,17 @@ namespace engine {
         glfwPollEvents();
     }
 
-    const char **WindowManager::getVulkanRequiredExtensions(std::uint32_t *extensionsCount) {
-        const char** glfwExtensions = glfwGetRequiredInstanceExtensions(extensionsCount);
-        return glfwExtensions;
+    std::vector<const char *> WindowManager::getRequiredExtensions() {
+        uint32_t glfwExtensionCount = 0;
+        const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+
+        std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
+
+        if (ApplicationConfig::IS_VALIDATION_LAYERS_ENABLED) {
+            extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+        }
+
+        return extensions;
     }
 
     void WindowManager::centerWindow() {

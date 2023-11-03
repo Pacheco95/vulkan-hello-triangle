@@ -4,10 +4,12 @@
 #include <memory>
 
 #include "ApplicationConfig.hpp"
+#include "PhysicalDeviceSelector.hpp"
 #include "VulkanInstanceManager.hpp"
 #include "WindowManager.hpp"
 
 using engine::ApplicationConfig;
+using engine::PhysicalDeviceSelector;
 using engine::ValidationLayerManager;
 using engine::VulkanInstanceManager;
 using engine::WindowManager;
@@ -22,6 +24,7 @@ class Application {
   std::unique_ptr<VulkanInstanceManager> m_vkInstanceManager = nullptr;
   std::unique_ptr<WindowManager> m_windowManager = nullptr;
   std::unique_ptr<ValidationLayerManager> m_validationLayerManager = nullptr;
+  std::unique_ptr<PhysicalDeviceSelector> m_physicalDeviceSelector = nullptr;
 };
 
 #endif  // APPLICATION_HPP

@@ -10,6 +10,9 @@ Application::Application() {
 
   m_validationLayerManager = std::make_unique<ValidationLayerManager>(
       m_vkInstanceManager->getInstance());
+
+  m_physicalDeviceSelector = std::make_unique<PhysicalDeviceSelector>(
+      m_vkInstanceManager->getInstance());
 }
 
 void Application::run() {

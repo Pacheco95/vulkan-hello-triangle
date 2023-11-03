@@ -2,36 +2,36 @@
 #define WINDOW_MANAGER_HPP
 
 #define GLFW_INCLUDE_VULKAN
+
 #include <GLFW/glfw3.h>
 
-#include <string>
 #include <cstdlib>
+#include <string>
 #include <vector>
 
 namespace engine {
 
-    class WindowManager {
-    public:
-        WindowManager(std::size_t width, std::size_t height, std::string title);
+class WindowManager {
+ public:
+  WindowManager(std::size_t width, std::size_t height, std::string title);
 
-        virtual ~WindowManager();
+  virtual ~WindowManager();
 
-        [[nodiscard]]
-        bool isOpen() const;
+  [[nodiscard]] bool isOpen() const;
 
-        void pollEvents();
+  void pollEvents();
 
-        static std::vector<const char *> getRequiredExtensions();
+  static std::vector<const char *> getRequiredExtensions();
 
-    private:
-        std::size_t m_width;
-        std::size_t m_height;
-        std::string m_title;
-        GLFWwindow *m_window = nullptr;
+ private:
+  std::size_t m_width;
+  std::size_t m_height;
+  std::string m_title;
+  GLFWwindow *m_window = nullptr;
 
-        void centerWindow();
-    };
+  void centerWindow();
+};
 
-} // engine
+}  // namespace engine
 
-#endif //WINDOW_MANAGER_HPP
+#endif  // WINDOW_MANAGER_HPP

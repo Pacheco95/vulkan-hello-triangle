@@ -16,13 +16,13 @@ add_executable(VulkanHelloTriangle main.cpp
         ApplicationConfig.hpp)
 
 target_link_libraries(VulkanHelloTriangle
-    PRIVATE
-    glfw
-    Vulkan::Vulkan
-    dl
-    pthread
-    X11
-    Xxf86vm
-    Xrandr
-    Xi
+        PRIVATE
+        glfw
+        Vulkan::Vulkan
+        dl
+        pthread
+        X11
+        Xxf86vm
+        Xrandr
+        Xi
 )

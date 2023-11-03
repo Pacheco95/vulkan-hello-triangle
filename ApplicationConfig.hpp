@@ -1,3 +1,6 @@
+#ifndef APPLICATION_CONFIG_HPP
+#define APPLICATION_CONFIG_HPP
+
 #include <cstdint>
 #include <vector>
 
@@ -23,3 +26,4 @@ const std::vector<const char *> ApplicationConfig::VALIDATION_LAYERS{
         "VK_LAYER_KHRONOS_validation"
 };
 
+#endif //APPLICATION_CONFIG_HPP

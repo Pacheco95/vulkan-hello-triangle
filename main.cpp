@@ -3,7 +3,7 @@
 
 #include "VulkanInstanceManager.hpp"
 #include "WindowManager.hpp"
-#include "ApplicationConfig.h"
+#include "ApplicationConfig.hpp"
 
 class Application {
 public:

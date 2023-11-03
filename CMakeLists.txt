@@ -12,7 +12,7 @@ add_executable(VulkanHelloTriangle main.cpp
         VulkanInstanceManager.hpp
         WindowManager.cpp
         WindowManager.hpp
-        ApplicationConfig.h)
+        ApplicationConfig.hpp)
 
 target_link_libraries(VulkanHelloTriangle
     PRIVATE

@@ -1,7 +1,5 @@
 #include "VulkanInstanceManager.hpp"
 
-#include <cstring>
-#include <iostream>
 #include <stdexcept>
 
 #include "ApplicationConfig.hpp"
@@ -11,14 +9,14 @@ namespace engine {
 using engine::ValidationLayerManager;
 
 [[maybe_unused]] VulkanInstanceManager::VulkanInstanceManager(
-    std::string applicationName)
-    : m_instance(createInstance()),
-      m_applicationName(std::move(applicationName)) {}
+    const std::string &applicationName)
+    : m_instance(createInstance(applicationName)) {}
 
-VkInstance VulkanInstanceManager::createInstance() {
+VkInstance VulkanInstanceManager::createInstance(
+    const std::string &applicationName) {
   VkApplicationInfo appInfo{};
   appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-  appInfo.pApplicationName = m_applicationName.c_str();
+  appInfo.pApplicationName = applicationName.c_str();
   appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
   appInfo.pEngineName = "No Engine";
   appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);

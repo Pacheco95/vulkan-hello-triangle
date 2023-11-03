@@ -16,7 +16,8 @@ namespace engine {
 
 class WindowManager {
  public:
-  WindowManager(std::size_t width, std::size_t height, std::string title);
+  WindowManager(std::size_t width, std::size_t height,
+                const std::string &title);
 
   virtual ~WindowManager();
 
@@ -27,9 +28,6 @@ class WindowManager {
   static std::vector<const char *> getRequiredExtensions();
 
  private:
-  std::size_t m_width;
-  std::size_t m_height;
-  std::string m_title;
   GLFWwindow *m_window = nullptr;
 
   void centerWindow();

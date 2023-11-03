@@ -11,7 +11,8 @@ namespace engine {
 
 class VulkanInstanceManager {
  public:
-  [[maybe_unused]] explicit VulkanInstanceManager(std::string applicationName);
+  [[maybe_unused]] explicit VulkanInstanceManager(
+      const std::string &applicationName);
 
   virtual ~VulkanInstanceManager();
 
@@ -19,9 +20,8 @@ class VulkanInstanceManager {
 
  private:
   VkInstance m_instance;
-  std::string m_applicationName;
 
-  VkInstance createInstance();
+  VkInstance createInstance(const std::string &applicationName);
 };
 
 }  // namespace engine

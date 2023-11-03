@@ -7,6 +7,7 @@ const std::size_t ApplicationConfig::WINDOW_WIDTH =
 const std::size_t ApplicationConfig::WINDOW_HEIGHT =
     static_cast<std::size_t>(600);
 
+const char *ApplicationConfig::APP_NAME = "Hello Triangle";
 const char *ApplicationConfig::WINDOW_TITLE = "Hello Triangle";
 
 #ifdef NDEBUG

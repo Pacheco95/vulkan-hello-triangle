@@ -15,7 +15,9 @@ add_executable(VulkanHelloTriangle src/main.cpp
         src/engine/WindowManager.cpp
         src/engine/WindowManager.hpp
         src/engine/ApplicationConfig.cpp
-        src/engine/ApplicationConfig.hpp)
+        src/engine/ApplicationConfig.hpp
+        src/engine/ValidationLayerManager.cpp
+        src/engine/ValidationLayerManager.hpp)
 
 target_link_libraries(VulkanHelloTriangle
         PRIVATE

@@ -5,6 +5,8 @@
 
 #include <string>
 
+#include "ValidationLayerManager.hpp"
+
 namespace engine {
 
 class VulkanInstanceManager {
@@ -13,14 +15,13 @@ class VulkanInstanceManager {
 
   virtual ~VulkanInstanceManager();
 
+  VkInstance getInstance();
+
  private:
   VkInstance m_instance;
   std::string m_applicationName;
-  VkDebugUtilsMessengerEXT m_debugMessenger;
 
-  void setupDebugMessenger();
-  void createInstance();
-  static bool checkValidationLayerSupport();
+  VkInstance createInstance();
 };
 
 }  // namespace engine

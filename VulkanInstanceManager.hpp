@@ -9,11 +9,9 @@ namespace engine {
 
 class VulkanInstanceManager {
  public:
-  explicit VulkanInstanceManager(const std::string &applicationName);
+  [[maybe_unused]] explicit VulkanInstanceManager(std::string applicationName);
 
   virtual ~VulkanInstanceManager();
-
-  [[nodiscard]] bool checkValidationLayerSupport() const;
 
  private:
   VkInstance m_instance;
@@ -21,8 +19,8 @@ class VulkanInstanceManager {
   VkDebugUtilsMessengerEXT m_debugMessenger;
 
   void setupDebugMessenger();
-
   void createInstance();
+  static bool checkValidationLayerSupport();
 };
 
 }  // namespace engine

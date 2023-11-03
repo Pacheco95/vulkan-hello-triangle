@@ -32,11 +32,11 @@ void DestroyDebugUtilsMessengerEXT(VkInstance instance,
   }
 }
 
-VKAPI_ATTR VkBool32 VKAPI_CALL
-debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-              VkDebugUtilsMessageTypeFlagsEXT messageType,
-              const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
-              void *pUserData) {
+VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
+    [[maybe_unused]] VkDebugUtilsMessageSeverityFlagBitsEXT _messageSeverity,
+    [[maybe_unused]] VkDebugUtilsMessageTypeFlagsEXT _messageType,
+    const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
+    [[maybe_unused]] void *_pUserData) {
   std::cerr << "[VALIDATION-LAYER]: " << pCallbackData->pMessage << std::endl;
 
   return VK_FALSE;
@@ -61,9 +61,10 @@ VkDebugUtilsMessengerCreateInfoEXT getDebugMessengerCreateInfo() {
 }
 
 namespace engine {
-VulkanInstanceManager::VulkanInstanceManager(const std::string &applicationName)
+[[maybe_unused]] VulkanInstanceManager::VulkanInstanceManager(
+    std::string applicationName)
     : m_instance(nullptr),
-      m_applicationName(applicationName),
+      m_applicationName(std::move(applicationName)),
       m_debugMessenger(nullptr) {
   if (ApplicationConfig::IS_VALIDATION_LAYERS_ENABLED &&
       !checkValidationLayerSupport()) {
@@ -119,7 +120,7 @@ VulkanInstanceManager::~VulkanInstanceManager() {
   vkDestroyInstance(m_instance, nullptr);
 }
 
-bool VulkanInstanceManager::checkValidationLayerSupport() const {
+bool VulkanInstanceManager::checkValidationLayerSupport() {
   uint32_t layerCount;
   vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
 

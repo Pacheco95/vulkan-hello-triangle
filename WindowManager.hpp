@@ -1,7 +1,10 @@
 #ifndef WINDOW_MANAGER_HPP
 #define WINDOW_MANAGER_HPP
 
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "OCUnusedMacroInspection"
 #define GLFW_INCLUDE_VULKAN
+#pragma clang diagnostic pop
 
 #include <GLFW/glfw3.h>
 

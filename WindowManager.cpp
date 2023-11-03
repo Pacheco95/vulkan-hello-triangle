@@ -1,12 +1,13 @@
 #include "WindowManager.hpp"
 
 #include <stdexcept>
+#include <utility>
 
 #include "ApplicationConfig.hpp"
 
 namespace engine {
 WindowManager::WindowManager(size_t width, size_t height, std::string title)
-    : m_width(width), m_height(height), m_title(title) {
+    : m_width(width), m_height(height), m_title(std::move(title)) {
   const char *initErrorMessage = "Failed to create window";
 
   if (!glfwInit()) {
@@ -37,7 +38,10 @@ WindowManager::~WindowManager() {
 
 bool WindowManager::isOpen() const { return !glfwWindowShouldClose(m_window); }
 
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "readability-convert-member-functions-to-static"
 void WindowManager::pollEvents() { glfwPollEvents(); }
+#pragma clang diagnostic pop
 
 std::vector<const char *> WindowManager::getRequiredExtensions() {
   uint32_t glfwExtensionCount = 0;

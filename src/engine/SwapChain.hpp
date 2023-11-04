@@ -27,6 +27,9 @@ class SwapChain {
  private:
   VkSwapchainKHR m_swapChain;
   VkDevice m_device;
+  std::vector<VkImage> m_swapChainImages;
+  VkFormat m_swapChainImageFormat;
+  VkExtent2D m_swapChainExtent{};
 
   static VkSurfaceFormatKHR chooseSwapSurfaceFormat(
       const std::vector<VkSurfaceFormatKHR> &availableFormats);

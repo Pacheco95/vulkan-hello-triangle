@@ -4,6 +4,18 @@
 #include <limits>
 #include <stdexcept>
 
+uint32_t getImageCount(
+    const engine::SwapChainSupportDetails &swapChainSupport) {
+  bool hasLimitedImages = swapChainSupport.capabilities.maxImageCount > 0;
+  uint32_t imageCount = swapChainSupport.capabilities.minImageCount + 1;
+
+  if (hasLimitedImages &&
+      imageCount > swapChainSupport.capabilities.maxImageCount) {
+    imageCount = swapChainSupport.capabilities.maxImageCount;
+  }
+  return imageCount;
+}
+
 namespace engine {
 SwapChain::SwapChain(GLFWwindow *window, VkPhysicalDevice physicalDevice,
                      VkDevice device, VkSurfaceKHR surface)
@@ -13,25 +25,23 @@ SwapChain::SwapChain(GLFWwindow *window, VkPhysicalDevice physicalDevice,
 
   VkSurfaceFormatKHR surfaceFormat =
       chooseSwapSurfaceFormat(swapChainSupport.formats);
+
+  m_swapChainImageFormat = surfaceFormat.format;
+
   VkPresentModeKHR presentMode =
       chooseSwapPresentMode(swapChainSupport.presentModes);
-  VkExtent2D extent = chooseSwapExtent(swapChainSupport.capabilities, window);
 
-  bool hasLimitedImages = swapChainSupport.capabilities.maxImageCount > 0;
-  uint32_t imageCount = swapChainSupport.capabilities.minImageCount + 1;
+  m_swapChainExtent = chooseSwapExtent(swapChainSupport.capabilities, window);
 
-  if (hasLimitedImages &&
-      imageCount > swapChainSupport.capabilities.maxImageCount) {
-    imageCount = swapChainSupport.capabilities.maxImageCount;
-  }
+  uint32_t imageCount = getImageCount(swapChainSupport);
 
   VkSwapchainCreateInfoKHR createInfo{};
   createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
   createInfo.surface = surface;
-  createInfo.minImageCount = imageCount;
+  createInfo.minImageCount = getImageCount(swapChainSupport);
   createInfo.imageFormat = surfaceFormat.format;
   createInfo.imageColorSpace = surfaceFormat.colorSpace;
-  createInfo.imageExtent = extent;
+  createInfo.imageExtent = m_swapChainExtent;
   createInfo.imageArrayLayers = 1;
   createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
   createInfo.preTransform = swapChainSupport.capabilities.currentTransform;
@@ -42,6 +52,7 @@ SwapChain::SwapChain(GLFWwindow *window, VkPhysicalDevice physicalDevice,
 
   QueueFamilyIndices indices =
       QueueFamilyUtils::findQueueFamilies(physicalDevice, surface);
+
   uint32_t queueFamilyIndices[] = {indices.graphicsFamily.value(),
                                    indices.presentFamily.value()};
 
@@ -59,6 +70,11 @@ SwapChain::SwapChain(GLFWwindow *window, VkPhysicalDevice physicalDevice,
       VK_SUCCESS) {
     throw std::runtime_error("Failed to create swap chain");
   }
+
+  vkGetSwapchainImagesKHR(device, m_swapChain, &imageCount, nullptr);
+  m_swapChainImages.resize(imageCount);
+  vkGetSwapchainImagesKHR(device, m_swapChain, &imageCount,
+                          m_swapChainImages.data());
 }
 
 SwapChain::~SwapChain() {

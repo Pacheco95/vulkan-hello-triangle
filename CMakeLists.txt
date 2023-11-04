@@ -22,6 +22,8 @@ add_executable(VulkanHelloTriangle src/main.cpp
         src/Application.hpp
         src/engine/PhysicalDeviceSelector.cpp
         src/engine/PhysicalDeviceSelector.hpp
+        src/engine/LogicalDevice.cpp
+        src/engine/LogicalDevice.hpp
         src/engine/QueueFamilyUtils.cpp
         src/engine/QueueFamilyUtils.hpp)
 

@@ -42,7 +42,9 @@ bool WindowManager::isOpen() const {
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "readability-convert-member-functions-to-static"
+
 void WindowManager::pollEvents() { glfwPollEvents(); }
+
 #pragma clang diagnostic pop
 
 std::vector<const char *> WindowManager::getRequiredExtensions() {

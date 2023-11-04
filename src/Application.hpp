@@ -20,12 +20,12 @@ class Application {
   void run();
 
  private:
-  WindowManager* m_windowManager;
-  VulkanInstanceManager* m_vkInstanceManager;
-  ValidationLayerManager* m_validationLayerManager;
-  Surface* m_surface;
-  PhysicalDeviceSelector* m_physicalDeviceSelector;
-  LogicalDevice* m_logicalDevice;
+  WindowManager *m_windowManager;
+  VulkanInstanceManager *m_vkInstanceManager;
+  ValidationLayerManager *m_validationLayerManager;
+  Surface *m_surface;
+  PhysicalDeviceSelector *m_physicalDeviceSelector;
+  LogicalDevice *m_logicalDevice;
 };
 
 #endif  // APPLICATION_HPP

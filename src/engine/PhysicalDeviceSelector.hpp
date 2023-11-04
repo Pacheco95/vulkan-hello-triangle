@@ -7,7 +7,7 @@ namespace engine {
 
 class PhysicalDeviceSelector {
  public:
-  explicit PhysicalDeviceSelector(VkInstance vkInstance);
+  explicit PhysicalDeviceSelector(VkInstance vkInstance, VkSurfaceKHR surface);
 
   [[nodiscard]] VkPhysicalDevice getSelectedDevice() const;
 
@@ -15,7 +15,7 @@ class PhysicalDeviceSelector {
   VkPhysicalDevice m_selectedDevice = VK_NULL_HANDLE;
 
  private:
-  static bool isDeviceSuitable(VkPhysicalDevice device);
+  static bool isDeviceSuitable(VkPhysicalDevice device, VkSurfaceKHR surface);
 };
 
 }  // namespace engine

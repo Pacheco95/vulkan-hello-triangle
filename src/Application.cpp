@@ -12,11 +12,11 @@ Application::Application() {
 
   m_surface = new Surface(*m_vkInstanceManager, *m_windowManager);
 
-  m_physicalDeviceSelector =
-      new PhysicalDeviceSelector(m_vkInstanceManager->getInstance());
+  m_physicalDeviceSelector = new PhysicalDeviceSelector(
+      m_vkInstanceManager->getInstance(), m_surface->getSurface());
 
-  m_logicalDevice =
-      new LogicalDevice(m_physicalDeviceSelector->getSelectedDevice());
+  m_logicalDevice = new LogicalDevice(
+      m_physicalDeviceSelector->getSelectedDevice(), m_surface->getSurface());
 }
 
 void Application::run() {

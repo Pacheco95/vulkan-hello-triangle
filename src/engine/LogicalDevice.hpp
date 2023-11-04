@@ -3,20 +3,27 @@
 
 #include <vulkan/vulkan.h>
 
+#include <vector>
+
+#include "QueueFamilyUtils.hpp"
+
 namespace engine {
 
 class LogicalDevice {
  public:
-  explicit LogicalDevice(VkPhysicalDevice physicalDevice);
+  explicit LogicalDevice(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
 
   virtual ~LogicalDevice();
+
+  [[nodiscard]] VkQueue getGraphicsQueue() const { return m_graphicsQueue; };
 
  private:
   VkDevice m_device;
   VkQueue m_graphicsQueue;
+  VkQueue m_presentQueue;
 
- public:
-  [[nodiscard]] VkQueue getGraphicsQueue() const { return m_graphicsQueue; };
+  static std::vector<VkDeviceQueueCreateInfo> getQueueCreateInfos(
+      engine::QueueFamilyIndices &indices);
 };
 
 }  // namespace engine

@@ -9,7 +9,8 @@ using engine::QueueFamilyIndices;
 using engine::QueueFamilyUtils;
 
 namespace engine {
-PhysicalDeviceSelector::PhysicalDeviceSelector(VkInstance vkInstance) {
+PhysicalDeviceSelector::PhysicalDeviceSelector(VkInstance vkInstance,
+                                               VkSurfaceKHR surface) {
   uint32_t deviceCount = 0;
   vkEnumeratePhysicalDevices(vkInstance, &deviceCount, nullptr);
 
@@ -21,7 +22,7 @@ PhysicalDeviceSelector::PhysicalDeviceSelector(VkInstance vkInstance) {
   vkEnumeratePhysicalDevices(vkInstance, &deviceCount, devices.data());
 
   for (const auto &device : devices) {
-    if (isDeviceSuitable(device)) {
+    if (isDeviceSuitable(device, surface)) {
       m_selectedDevice = device;
       break;
     }
@@ -32,8 +33,10 @@ PhysicalDeviceSelector::PhysicalDeviceSelector(VkInstance vkInstance) {
   }
 }
 
-bool PhysicalDeviceSelector::isDeviceSuitable(VkPhysicalDevice device) {
-  QueueFamilyIndices indices = QueueFamilyUtils::findQueueFamilies(device);
+bool PhysicalDeviceSelector::isDeviceSuitable(VkPhysicalDevice device,
+                                              VkSurfaceKHR surface) {
+  QueueFamilyIndices indices =
+      QueueFamilyUtils::findQueueFamilies(device, surface);
   return indices.isComplete();
 }
 

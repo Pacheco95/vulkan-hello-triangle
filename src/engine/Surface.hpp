@@ -15,6 +15,8 @@ class Surface {
 
   virtual ~Surface();
 
+  [[nodiscard]] VkSurfaceKHR getSurface() const;
+
  private:
   VkSurfaceKHR m_surface;
   const VulkanInstanceManager &m_instanceManager;

@@ -18,4 +18,6 @@ Surface::Surface(const VulkanInstanceManager &instanceManager,
 Surface::~Surface() {
   vkDestroySurfaceKHR(m_instanceManager.getInstance(), m_surface, nullptr);
 }
+
+VkSurfaceKHR Surface::getSurface() const { return m_surface; }
 }  // namespace engine

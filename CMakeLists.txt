@@ -25,7 +25,9 @@ add_executable(VulkanHelloTriangle src/main.cpp
         src/engine/LogicalDevice.cpp
         src/engine/LogicalDevice.hpp
         src/engine/QueueFamilyUtils.cpp
-        src/engine/QueueFamilyUtils.hpp)
+        src/engine/QueueFamilyUtils.hpp
+        src/engine/Surface.cpp
+        src/engine/Surface.hpp)
 
 target_link_libraries(VulkanHelloTriangle
         PRIVATE

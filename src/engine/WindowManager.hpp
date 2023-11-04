@@ -27,6 +27,8 @@ class WindowManager {
 
   static std::vector<const char *> getRequiredExtensions();
 
+  [[nodiscard]] GLFWwindow *getWindow() const;
+
  private:
   GLFWwindow *m_window = nullptr;
 

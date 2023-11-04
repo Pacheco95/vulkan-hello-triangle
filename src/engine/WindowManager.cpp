@@ -68,4 +68,6 @@ void WindowManager::centerWindow() {
   glfwSetWindowPos(m_window, xPos, yPos);
 }
 
+GLFWwindow *WindowManager::getWindow() const { return m_window; }
+
 }  // namespace engine

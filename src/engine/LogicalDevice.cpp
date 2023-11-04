@@ -37,7 +37,7 @@ LogicalDevice::LogicalDevice(VkPhysicalDevice physicalDevice)
 
   if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &m_device) !=
       VK_SUCCESS) {
-    throw std::runtime_error("failed to create logical device!");
+    throw std::runtime_error("Failed to create logical device");
   }
 
   vkGetDeviceQueue(m_device, indices.graphicsFamily.value(), 0,

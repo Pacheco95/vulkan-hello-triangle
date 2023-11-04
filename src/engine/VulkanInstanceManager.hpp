@@ -16,7 +16,7 @@ class VulkanInstanceManager {
 
   virtual ~VulkanInstanceManager();
 
-  VkInstance getInstance();
+  [[nodiscard]] VkInstance getInstance() const;
 
  private:
   VkInstance m_instance;

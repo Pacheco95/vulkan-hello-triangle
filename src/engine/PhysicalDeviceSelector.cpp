@@ -3,6 +3,11 @@
 #include <stdexcept>
 #include <vector>
 
+#include "QueueFamilyUtils.hpp"
+
+using engine::QueueFamilyIndices;
+using engine::QueueFamilyUtils;
+
 namespace engine {
 PhysicalDeviceSelector::PhysicalDeviceSelector(VkInstance vkInstance) {
   uint32_t deviceCount = 0;
@@ -28,33 +33,8 @@ PhysicalDeviceSelector::PhysicalDeviceSelector(VkInstance vkInstance) {
 }
 
 bool PhysicalDeviceSelector::isDeviceSuitable(VkPhysicalDevice device) {
-  QueueFamilyIndices indices = findQueueFamilies(device);
-
+  QueueFamilyIndices indices = QueueFamilyUtils::findQueueFamilies(device);
   return indices.isComplete();
-}
-
-PhysicalDeviceSelector::QueueFamilyIndices
-PhysicalDeviceSelector::findQueueFamilies(VkPhysicalDevice device) {
-  QueueFamilyIndices indices;
-
-  uint32_t queueFamilyCount = 0;
-  vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
-
-  std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
-  vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount,
-                                           queueFamilies.data());
-
-  for (int i = 0; i < queueFamilies.size(); i++) {
-    if (queueFamilies[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) {
-      indices.graphicsFamily = i;
-    }
-
-    if (indices.isComplete()) {
-      break;
-    }
-  }
-
-  return indices;
 }
 
 VkPhysicalDevice PhysicalDeviceSelector::getSelectedDevice() const {

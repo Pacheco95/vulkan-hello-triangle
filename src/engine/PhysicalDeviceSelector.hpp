@@ -3,19 +3,11 @@
 
 #include <vulkan/vulkan.h>
 
-#include <optional>
-
 namespace engine {
 
 class PhysicalDeviceSelector {
  public:
   explicit PhysicalDeviceSelector(VkInstance vkInstance);
-
-  struct QueueFamilyIndices {
-    std::optional<uint32_t> graphicsFamily;
-
-    [[nodiscard]] bool isComplete() const { return graphicsFamily.has_value(); }
-  };
 
   [[nodiscard]] VkPhysicalDevice getSelectedDevice() const;
 
@@ -24,8 +16,6 @@ class PhysicalDeviceSelector {
 
  private:
   static bool isDeviceSuitable(VkPhysicalDevice device);
-
-  static QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
 };
 
 }  // namespace engine

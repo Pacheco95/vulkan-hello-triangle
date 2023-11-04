@@ -1,5 +1,7 @@
 #include "ApplicationConfig.hpp"
 
+#include <vulkan/vulkan.h>
+
 namespace engine {
 const std::size_t ApplicationConfig::WINDOW_WIDTH =
     static_cast<std::size_t>(800);
@@ -18,5 +20,8 @@ const bool ApplicationConfig::IS_VALIDATION_LAYERS_ENABLED = true;
 
 const std::vector<const char *> ApplicationConfig::VALIDATION_LAYERS{
     "VK_LAYER_KHRONOS_validation"};
+
+const std::vector<const char *> ApplicationConfig::DEVICE_EXTENSIONS{
+    VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 
 }  // namespace engine

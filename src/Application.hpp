@@ -5,6 +5,7 @@
 #include "LogicalDevice.hpp"
 #include "PhysicalDeviceSelector.hpp"
 #include "Surface.hpp"
+#include "SwapChain.hpp"
 #include "ValidationLayerManager.hpp"
 #include "VulkanInstanceManager.hpp"
 #include "WindowManager.hpp"
@@ -26,6 +27,7 @@ class Application {
   Surface *m_surface;
   PhysicalDeviceSelector *m_physicalDeviceSelector;
   LogicalDevice *m_logicalDevice;
+  SwapChain *m_swapChain;
 };
 
 #endif  // APPLICATION_HPP

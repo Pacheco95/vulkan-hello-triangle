@@ -17,6 +17,11 @@ Application::Application() {
 
   m_logicalDevice = new LogicalDevice(
       m_physicalDeviceSelector->getSelectedDevice(), m_surface->getSurface());
+
+  m_swapChain =
+      new SwapChain(m_windowManager->getWindow(),
+                    m_physicalDeviceSelector->getSelectedDevice(),
+                    m_logicalDevice->getDevice(), m_surface->getSurface());
 }
 
 void Application::run() {
@@ -26,6 +31,7 @@ void Application::run() {
 }
 
 Application::~Application() {
+  delete m_swapChain;
   delete m_logicalDevice;
   delete m_physicalDeviceSelector;
   delete m_surface;

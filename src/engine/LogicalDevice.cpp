@@ -23,7 +23,10 @@ LogicalDevice::LogicalDevice(VkPhysicalDevice physicalDevice,
   createInfo.pQueueCreateInfos = queueCreateInfos.data();
   createInfo.queueCreateInfoCount = queueCreateInfos.size();
   createInfo.pEnabledFeatures = &deviceFeatures;
-  createInfo.enabledExtensionCount = 0;
+  createInfo.enabledExtensionCount =
+      ApplicationConfig::DEVICE_EXTENSIONS.size();
+  createInfo.ppEnabledExtensionNames =
+      ApplicationConfig::DEVICE_EXTENSIONS.data();
 
   if (ApplicationConfig::IS_VALIDATION_LAYERS_ENABLED) {
     auto &validationLayers = ApplicationConfig::VALIDATION_LAYERS;
@@ -66,4 +69,6 @@ std::vector<VkDeviceQueueCreateInfo> LogicalDevice::getQueueCreateInfos(
 }
 
 LogicalDevice::~LogicalDevice() { vkDestroyDevice(m_device, nullptr); }
+
+VkDevice LogicalDevice::getDevice() const { return m_device; }
 }  // namespace engine

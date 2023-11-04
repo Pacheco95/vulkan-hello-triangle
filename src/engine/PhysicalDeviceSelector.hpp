@@ -16,6 +16,8 @@ class PhysicalDeviceSelector {
 
  private:
   static bool isDeviceSuitable(VkPhysicalDevice device, VkSurfaceKHR surface);
+
+  static bool checkDeviceExtensionSupport(VkPhysicalDevice device);
 };
 
 }  // namespace engine

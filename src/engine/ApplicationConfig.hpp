@@ -11,6 +11,7 @@ struct ApplicationConfig {
   static const char *APP_NAME;
   static const char *WINDOW_TITLE;
   static const std::vector<const char *> VALIDATION_LAYERS;
+  static const std::vector<const char *> DEVICE_EXTENSIONS;
   static const bool IS_VALIDATION_LAYERS_ENABLED;
 };
 }  // namespace engine

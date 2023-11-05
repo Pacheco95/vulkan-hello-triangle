@@ -2,6 +2,7 @@
 #define APPLICATION_HPP
 
 #include "ApplicationConfig.hpp"
+#include "GraphicsPipeline.hpp"
 #include "LogicalDevice.hpp"
 #include "PhysicalDeviceSelector.hpp"
 #include "Surface.hpp"
@@ -28,6 +29,7 @@ class Application {
   PhysicalDeviceSelector *m_physicalDeviceSelector;
   LogicalDevice *m_logicalDevice;
   SwapChain *m_swapChain;
+  GraphicsPipeline *m_graphicsPipeline;
 };
 
 #endif  // APPLICATION_HPP

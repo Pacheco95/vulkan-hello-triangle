@@ -32,6 +32,10 @@ class SwapChain {
   VkFormat m_swapChainImageFormat;
   VkExtent2D m_swapChainExtent{};
 
+ public:
+  [[nodiscard]] VkExtent2D getSwapChainExtent() const;
+
+ private:
   static VkSurfaceFormatKHR chooseSwapSurfaceFormat(
       const std::vector<VkSurfaceFormatKHR> &availableFormats);
 

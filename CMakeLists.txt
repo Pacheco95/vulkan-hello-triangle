@@ -42,7 +42,11 @@ add_executable(VulkanHelloTriangle src/main.cpp
         src/engine/Surface.hpp
         src/engine/SwapChain.cpp
         src/engine/SwapChain.hpp
-        src/engine/Abort.hpp)
+        src/engine/Abort.hpp
+        src/engine/ShaderLoader.cpp
+        src/engine/ShaderLoader.hpp
+        src/engine/GraphicsPipeline.cpp
+        src/engine/GraphicsPipeline.hpp)
 
 target_link_libraries(VulkanHelloTriangle
         PRIVATE

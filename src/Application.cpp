@@ -1,5 +1,7 @@
 #include "Application.hpp"
 
+using Buffer = ShaderLoader::Buffer;
+
 Application::Application() {
   m_windowManager = new WindowManager(ApplicationConfig::WINDOW_WIDTH,
                                       ApplicationConfig::WINDOW_HEIGHT,
@@ -22,6 +24,13 @@ Application::Application() {
       new SwapChain(m_windowManager->getWindow(),
                     m_physicalDeviceSelector->getSelectedDevice(),
                     m_logicalDevice->getDevice(), m_surface->getSurface());
+
+  Buffer fragShaderByteCode = ShaderLoader::load("res/shaders/frag.spv");
+  Buffer vertShaderByteCode = ShaderLoader::load("res/shaders/vert.spv");
+
+  m_graphicsPipeline = new GraphicsPipeline(
+      m_logicalDevice->getDevice(), vertShaderByteCode, fragShaderByteCode,
+      m_swapChain->getSwapChainExtent());
 }
 
 void Application::run() {
@@ -31,6 +40,7 @@ void Application::run() {
 }
 
 Application::~Application() {
+  delete m_graphicsPipeline;
   delete m_swapChain;
   delete m_logicalDevice;
   delete m_physicalDeviceSelector;

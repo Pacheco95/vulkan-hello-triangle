@@ -211,4 +211,5 @@ VkExtent2D SwapChain::chooseSwapExtent(
 
   return actualExtent;
 }
+VkExtent2D SwapChain::getSwapChainExtent() const { return m_swapChainExtent; }
 }  // namespace engine

@@ -3,9 +3,9 @@
 #include <vector>
 
 namespace engine {
-GraphicsPipeline::GraphicsPipeline(
-    VkDevice device, const ShaderLoader::Buffer& vertShaderByteCode,
-    const ShaderLoader::Buffer& fragShaderByteCode, const SwapChain& swapChain)
+GraphicsPipeline::GraphicsPipeline(VkDevice device, ByteCode vertShaderByteCode,
+                                   ByteCode fragShaderByteCode,
+                                   const SwapChain& swapChain)
     : m_device(device), m_pipelineLayout(nullptr), renderPass(nullptr) {
   VkShaderModule vertShaderModule =
       createShaderModule(vertShaderByteCode, device);
@@ -13,6 +13,22 @@ GraphicsPipeline::GraphicsPipeline(
   VkShaderModule fragShaderModule =
       createShaderModule(fragShaderByteCode, device);
 
+  createPipelineLayout(swapChain, vertShaderModule, fragShaderModule);
+
+  createRenderPass(swapChain.getSwapChainImageFormat());
+
+  vkDestroyShaderModule(device, fragShaderModule, nullptr);
+  vkDestroyShaderModule(device, vertShaderModule, nullptr);
+}
+
+GraphicsPipeline::~GraphicsPipeline() {
+  vkDestroyPipelineLayout(m_device, m_pipelineLayout, nullptr);
+  vkDestroyRenderPass(m_device, renderPass, nullptr);
+}
+
+void GraphicsPipeline::createPipelineLayout(const SwapChain& swapChain,
+                                            VkShaderModule vertShaderModule,
+                                            VkShaderModule fragShaderModule) {
   VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
   vertShaderStageInfo.sType =
       VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -118,20 +134,10 @@ GraphicsPipeline::GraphicsPipeline(
   pipelineLayoutInfo.pushConstantRangeCount = 0;     // Optional
   pipelineLayoutInfo.pPushConstantRanges = nullptr;  // Optional
 
-  if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr,
+  if (vkCreatePipelineLayout(m_device, &pipelineLayoutInfo, nullptr,
                              &m_pipelineLayout) != VK_SUCCESS) {
     ABORT("Failed to create pipeline layout");
   }
-
-  createRenderPass(swapChain.getSwapChainImageFormat());
-
-  vkDestroyShaderModule(device, fragShaderModule, nullptr);
-  vkDestroyShaderModule(device, vertShaderModule, nullptr);
-}
-
-GraphicsPipeline::~GraphicsPipeline() {
-  vkDestroyPipelineLayout(m_device, m_pipelineLayout, nullptr);
-  vkDestroyRenderPass(m_device, renderPass, nullptr);
 }
 
 VkShaderModule GraphicsPipeline::createShaderModule(ByteCode ShaderByteCode,

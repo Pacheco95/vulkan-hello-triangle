@@ -11,9 +11,8 @@ using ByteCode = const ShaderLoader::Buffer&;
 
 class GraphicsPipeline {
  public:
-  GraphicsPipeline(VkDevice device,
-                   const ShaderLoader::Buffer& vertShaderByteCode,
-                   const ShaderLoader::Buffer& fragShaderByteCode,
+  GraphicsPipeline(VkDevice device, ByteCode vertShaderByteCode,
+                   ByteCode fragShaderByteCode,
                    const engine::SwapChain& swapChain);
 
   virtual ~GraphicsPipeline();
@@ -27,6 +26,10 @@ class GraphicsPipeline {
                                            VkDevice device);
 
   void createRenderPass(VkFormat swapChainImageFormat);
+
+  void createPipelineLayout(const SwapChain& swapChain,
+                            VkShaderModule vertShaderModule,
+                            VkShaderModule fragShaderModule);
 };
 
 }  // namespace engine

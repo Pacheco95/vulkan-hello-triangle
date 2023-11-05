@@ -1,51 +1,41 @@
 #include "GraphicsPipeline.hpp"
 
+#include <array>
 #include <vector>
 
 namespace engine {
 GraphicsPipeline::GraphicsPipeline(VkDevice device, ByteCode vertShaderByteCode,
                                    ByteCode fragShaderByteCode,
                                    const SwapChain& swapChain)
-    : m_device(device), m_pipelineLayout(nullptr), renderPass(nullptr) {
+    : m_device(device),
+      m_pipelineLayout(nullptr),
+      renderPass(nullptr),
+      m_graphicsPipeline(nullptr) {
   VkShaderModule vertShaderModule =
-      createShaderModule(vertShaderByteCode, device);
+      createShaderModule(vertShaderByteCode, m_device);
 
   VkShaderModule fragShaderModule =
-      createShaderModule(fragShaderByteCode, device);
+      createShaderModule(fragShaderByteCode, m_device);
 
-  createPipelineLayout(swapChain, vertShaderModule, fragShaderModule);
+  ShaderStages shaderStages =
+      getShaderStages(vertShaderModule, fragShaderModule);
 
   createRenderPass(swapChain.getSwapChainImageFormat());
 
-  vkDestroyShaderModule(device, fragShaderModule, nullptr);
-  vkDestroyShaderModule(device, vertShaderModule, nullptr);
+  createPipeline(swapChain, shaderStages);
+
+  vkDestroyShaderModule(m_device, fragShaderModule, nullptr);
+  vkDestroyShaderModule(m_device, vertShaderModule, nullptr);
 }
 
 GraphicsPipeline::~GraphicsPipeline() {
+  vkDestroyPipeline(m_device, m_graphicsPipeline, nullptr);
   vkDestroyPipelineLayout(m_device, m_pipelineLayout, nullptr);
   vkDestroyRenderPass(m_device, renderPass, nullptr);
 }
 
-void GraphicsPipeline::createPipelineLayout(const SwapChain& swapChain,
-                                            VkShaderModule vertShaderModule,
-                                            VkShaderModule fragShaderModule) {
-  VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
-  vertShaderStageInfo.sType =
-      VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-  vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
-  vertShaderStageInfo.module = vertShaderModule;
-  vertShaderStageInfo.pName = "main";
-
-  VkPipelineShaderStageCreateInfo fragShaderStageInfo{};
-  fragShaderStageInfo.sType =
-      VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-  fragShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-  fragShaderStageInfo.module = fragShaderModule;
-  fragShaderStageInfo.pName = "main";
-
-  VkPipelineShaderStageCreateInfo shaderStages[]{vertShaderStageInfo,
-                                                 fragShaderStageInfo};
-
+void GraphicsPipeline::createPipeline(const SwapChain& swapChain,
+                                      ShaderStages& shaderStages) {
   std::vector<VkDynamicState> dynamicStates = {VK_DYNAMIC_STATE_VIEWPORT,
                                                VK_DYNAMIC_STATE_SCISSOR};
 
@@ -138,10 +128,54 @@ void GraphicsPipeline::createPipelineLayout(const SwapChain& swapChain,
                              &m_pipelineLayout) != VK_SUCCESS) {
     ABORT("Failed to create pipeline layout");
   }
+
+  VkGraphicsPipelineCreateInfo pipelineInfo{};
+  pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+  pipelineInfo.stageCount = shaderStages.size();
+  pipelineInfo.pStages = shaderStages.data();
+  pipelineInfo.pVertexInputState = &vertexInputInfo;
+  pipelineInfo.pInputAssemblyState = &inputAssembly;
+  pipelineInfo.pViewportState = &viewportState;
+  pipelineInfo.pRasterizationState = &rasterizer;
+  pipelineInfo.pMultisampleState = &multisampling;
+  pipelineInfo.pDepthStencilState = nullptr;  // Optional
+  pipelineInfo.pColorBlendState = &colorBlending;
+  pipelineInfo.pDynamicState = &dynamicState;
+  pipelineInfo.layout = m_pipelineLayout;
+  pipelineInfo.renderPass = renderPass;
+  pipelineInfo.subpass = 0;
+  pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
+
+  if (vkCreateGraphicsPipelines(m_device, VK_NULL_HANDLE, 1, &pipelineInfo,
+                                nullptr, &m_graphicsPipeline) != VK_SUCCESS) {
+    ABORT("Failed to create graphics pipeline");
+  }
+
+  SPDLOG_DEBUG("Created pipeline");
+}
+
+ShaderStages GraphicsPipeline::getShaderStages(
+    VkShaderModule vertShaderModule, VkShaderModule fragShaderModule) {
+  VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
+  vertShaderStageInfo.sType =
+      VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+  vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
+  vertShaderStageInfo.module = vertShaderModule;
+  vertShaderStageInfo.pName = "main";
+
+  VkPipelineShaderStageCreateInfo fragShaderStageInfo{};
+  fragShaderStageInfo.sType =
+      VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+  fragShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+  fragShaderStageInfo.module = fragShaderModule;
+  fragShaderStageInfo.pName = "main";
+
+  ShaderStages shaderStages{vertShaderStageInfo, fragShaderStageInfo};
+  return shaderStages;
 }
 
 VkShaderModule GraphicsPipeline::createShaderModule(ByteCode ShaderByteCode,
-                                                    VkDevice device) {
+                                                    VkDevice m_device) {
   VkShaderModuleCreateInfo createInfo{};
   createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
   createInfo.codeSize = ShaderByteCode.size();
@@ -149,7 +183,7 @@ VkShaderModule GraphicsPipeline::createShaderModule(ByteCode ShaderByteCode,
 
   VkShaderModule shaderModule;
 
-  if (vkCreateShaderModule(device, &createInfo, nullptr, &shaderModule) !=
+  if (vkCreateShaderModule(m_device, &createInfo, nullptr, &shaderModule) !=
       VK_SUCCESS) {
     ABORT("Failed to create shader module");
   }
@@ -188,5 +222,7 @@ void GraphicsPipeline::createRenderPass(VkFormat swapChainImageFormat) {
       VK_SUCCESS) {
     ABORT("failed to create render pass");
   }
+
+  SPDLOG_DEBUG("Created render pass");
 }
 }  // namespace engine

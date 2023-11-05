@@ -28,6 +28,7 @@ class SwapChain {
   VkSwapchainKHR m_swapChain;
   VkDevice m_device;
   std::vector<VkImage> m_swapChainImages;
+  std::vector<VkImageView> m_swapChainImageViews;
   VkFormat m_swapChainImageFormat;
   VkExtent2D m_swapChainExtent{};
 
@@ -39,6 +40,8 @@ class SwapChain {
 
   static VkExtent2D chooseSwapExtent(
       const VkSurfaceCapabilitiesKHR &capabilities, GLFWwindow *window);
+
+  void createImageViews(VkDevice device);
 };
 
 }  // namespace engine

@@ -5,6 +5,7 @@
 #include "GraphicsPipeline.hpp"
 #include "LogicalDevice.hpp"
 #include "PhysicalDeviceSelector.hpp"
+#include "RenderPass.hpp"
 #include "Surface.hpp"
 #include "SwapChain.hpp"
 #include "ValidationLayerManager.hpp"
@@ -29,6 +30,7 @@ class Application {
   PhysicalDeviceSelector *m_physicalDeviceSelector;
   LogicalDevice *m_logicalDevice;
   SwapChain *m_swapChain;
+  RenderPass *m_renderPass;
   GraphicsPipeline *m_graphicsPipeline;
 };
 

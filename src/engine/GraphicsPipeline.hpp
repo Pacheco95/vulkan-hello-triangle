@@ -3,6 +3,7 @@
 
 #include <vulkan/vulkan.h>
 
+#include "RenderPass.hpp"
 #include "ShaderLoader.hpp"
 #include "SwapChain.hpp"
 
@@ -14,24 +15,23 @@ class GraphicsPipeline {
  public:
   GraphicsPipeline(VkDevice device, ByteCode vertShaderByteCode,
                    ByteCode fragShaderByteCode,
-                   const engine::SwapChain& swapChain);
+                   const engine::SwapChain& swapChain,
+                   const engine::RenderPass& renderPass);
 
   virtual ~GraphicsPipeline();
 
  private:
   VkDevice m_device;
   VkPipelineLayout m_pipelineLayout;
-  VkRenderPass renderPass;
   VkPipeline m_graphicsPipeline;
 
   static VkShaderModule createShaderModule(ByteCode ShaderByteCode,
                                            VkDevice device);
 
-  void createRenderPass(VkFormat swapChainImageFormat);
-
   static ShaderStages getShaderStages(VkShaderModule vertShaderModule,
                                       VkShaderModule fragShaderModule);
-  void createPipeline(const SwapChain& swapChain, ShaderStages& shaderStages);
+  void createPipeline(const SwapChain& swapChain, ShaderStages& shaderStages,
+                      VkRenderPass renderPass);
 };
 
 }  // namespace engine

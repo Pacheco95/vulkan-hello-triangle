@@ -17,20 +17,24 @@ Application::Application() {
   m_physicalDeviceSelector = new PhysicalDeviceSelector(
       m_vkInstanceManager->getInstance(), m_surface->getSurface());
 
-  m_logicalDevice = new LogicalDevice(
-      m_physicalDeviceSelector->getSelectedDevice(), m_surface->getSurface());
+  VkPhysicalDevice physicalDevice =
+      m_physicalDeviceSelector->getSelectedDevice();
 
-  m_swapChain =
-      new SwapChain(m_windowManager->getWindow(),
-                    m_physicalDeviceSelector->getSelectedDevice(),
-                    m_logicalDevice->getDevice(), m_surface->getSurface());
+  m_logicalDevice = new LogicalDevice(physicalDevice, m_surface->getSurface());
+
+  VkDevice device = m_logicalDevice->getDevice();
+
+  m_swapChain = new SwapChain(m_windowManager->getWindow(), physicalDevice,
+                              device, m_surface->getSurface());
 
   Buffer fragShaderByteCode = ShaderLoader::load("res/shaders/frag.spv");
   Buffer vertShaderByteCode = ShaderLoader::load("res/shaders/vert.spv");
 
+  m_renderPass = new RenderPass(device, *m_swapChain);
+
   m_graphicsPipeline =
-      new GraphicsPipeline(m_logicalDevice->getDevice(), vertShaderByteCode,
-                           fragShaderByteCode, *m_swapChain);
+      new GraphicsPipeline(device, vertShaderByteCode, fragShaderByteCode,
+                           *m_swapChain, *m_renderPass);
 }
 
 void Application::run() {
@@ -41,6 +45,7 @@ void Application::run() {
 
 Application::~Application() {
   delete m_graphicsPipeline;
+  delete m_renderPass;
   delete m_swapChain;
   delete m_logicalDevice;
   delete m_physicalDeviceSelector;

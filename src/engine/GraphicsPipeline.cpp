@@ -6,11 +6,9 @@
 namespace engine {
 GraphicsPipeline::GraphicsPipeline(VkDevice device, ByteCode vertShaderByteCode,
                                    ByteCode fragShaderByteCode,
-                                   const SwapChain& swapChain)
-    : m_device(device),
-      m_pipelineLayout(nullptr),
-      renderPass(nullptr),
-      m_graphicsPipeline(nullptr) {
+                                   const SwapChain& swapChain,
+                                   const engine::RenderPass& renderPass)
+    : m_device(device), m_pipelineLayout(nullptr), m_graphicsPipeline(nullptr) {
   VkShaderModule vertShaderModule =
       createShaderModule(vertShaderByteCode, m_device);
 
@@ -20,9 +18,7 @@ GraphicsPipeline::GraphicsPipeline(VkDevice device, ByteCode vertShaderByteCode,
   ShaderStages shaderStages =
       getShaderStages(vertShaderModule, fragShaderModule);
 
-  createRenderPass(swapChain.getSwapChainImageFormat());
-
-  createPipeline(swapChain, shaderStages);
+  createPipeline(swapChain, shaderStages, renderPass.getPass());
 
   vkDestroyShaderModule(m_device, fragShaderModule, nullptr);
   vkDestroyShaderModule(m_device, vertShaderModule, nullptr);
@@ -31,11 +27,11 @@ GraphicsPipeline::GraphicsPipeline(VkDevice device, ByteCode vertShaderByteCode,
 GraphicsPipeline::~GraphicsPipeline() {
   vkDestroyPipeline(m_device, m_graphicsPipeline, nullptr);
   vkDestroyPipelineLayout(m_device, m_pipelineLayout, nullptr);
-  vkDestroyRenderPass(m_device, renderPass, nullptr);
 }
 
 void GraphicsPipeline::createPipeline(const SwapChain& swapChain,
-                                      ShaderStages& shaderStages) {
+                                      ShaderStages& shaderStages,
+                                      VkRenderPass renderPass) {
   std::vector<VkDynamicState> dynamicStates = {VK_DYNAMIC_STATE_VIEWPORT,
                                                VK_DYNAMIC_STATE_SCISSOR};
 
@@ -191,38 +187,4 @@ VkShaderModule GraphicsPipeline::createShaderModule(ByteCode ShaderByteCode,
   return shaderModule;
 }
 
-void GraphicsPipeline::createRenderPass(VkFormat swapChainImageFormat) {
-  VkAttachmentDescription colorAttachment{};
-  colorAttachment.format = swapChainImageFormat;
-  colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-  colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-  colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-  colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-  colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-  colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-  colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-
-  VkAttachmentReference colorAttachmentRef{};
-  colorAttachmentRef.attachment = 0;
-  colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-  VkSubpassDescription subPass{};
-  subPass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-  subPass.colorAttachmentCount = 1;
-  subPass.pColorAttachments = &colorAttachmentRef;
-
-  VkRenderPassCreateInfo renderPassInfo{};
-  renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-  renderPassInfo.attachmentCount = 1;
-  renderPassInfo.pAttachments = &colorAttachment;
-  renderPassInfo.subpassCount = 1;
-  renderPassInfo.pSubpasses = &subPass;
-
-  if (vkCreateRenderPass(m_device, &renderPassInfo, nullptr, &renderPass) !=
-      VK_SUCCESS) {
-    ABORT("failed to create render pass");
-  }
-
-  SPDLOG_DEBUG("Created render pass");
-}
 }  // namespace engine

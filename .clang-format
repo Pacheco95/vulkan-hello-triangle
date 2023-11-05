@@ -169,7 +169,7 @@ RawStringFormats:
 ReferenceAlignment: Pointer
 ReflowComments: true
 RemoveBracesLLVM: false
-SeparateDefinitionBlocks: Leave
+SeparateDefinitionBlocks: Always
 ShortNamespaceLines: 1
 SortIncludes: CaseSensitive
 SortJavaStaticImport: Before

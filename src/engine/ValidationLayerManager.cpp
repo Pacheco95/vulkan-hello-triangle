@@ -32,11 +32,21 @@ ValidationLayerManager::~ValidationLayerManager() {
 }
 
 VKAPI_ATTR VkBool32 VKAPI_CALL ValidationLayerManager::debugCallback(
-    [[maybe_unused]] VkDebugUtilsMessageSeverityFlagBitsEXT _messageSeverity,
+    [[maybe_unused]] VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
     [[maybe_unused]] VkDebugUtilsMessageTypeFlagsEXT _messageType,
     const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
     [[maybe_unused]] void *_pUserData) {
-  std::cerr << "[VALIDATION-LAYER]: " << pCallbackData->pMessage << std::endl;
+  switch (messageSeverity) {
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
+      SPDLOG_DEBUG(pCallbackData->pMessage);
+      break;
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
+      SPDLOG_WARN(pCallbackData->pMessage);
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_FLAG_BITS_MAX_ENUM_EXT:
+      SPDLOG_ERROR(pCallbackData->pMessage);
+  }
 
   return VK_FALSE;
 }

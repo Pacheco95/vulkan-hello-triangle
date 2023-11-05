@@ -30,6 +30,7 @@ LogicalDevice::LogicalDevice(VkPhysicalDevice physicalDevice,
       ApplicationConfig::DEVICE_EXTENSIONS.data();
 
   if (ApplicationConfig::IS_VALIDATION_LAYERS_ENABLED) {
+    SPDLOG_DEBUG("Enabling validation layer for physical device creation");
     auto &validationLayers = ApplicationConfig::VALIDATION_LAYERS;
     createInfo.enabledLayerCount = validationLayers.size();
     createInfo.ppEnabledLayerNames = validationLayers.data();

@@ -37,10 +37,12 @@ SwapChain::SwapChain(GLFWwindow *window, VkPhysicalDevice physicalDevice,
 
   uint32_t imageCount = getImageCount(swapChainSupport);
 
+  SPDLOG_DEBUG("Using swap chain with {} images", imageCount);
+
   VkSwapchainCreateInfoKHR createInfo{};
   createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
   createInfo.surface = surface;
-  createInfo.minImageCount = getImageCount(swapChainSupport);
+  createInfo.minImageCount = imageCount;
   createInfo.imageFormat = surfaceFormat.format;
   createInfo.imageColorSpace = surfaceFormat.colorSpace;
   createInfo.imageExtent = m_swapChainExtent;
@@ -62,10 +64,12 @@ SwapChain::SwapChain(GLFWwindow *window, VkPhysicalDevice physicalDevice,
     createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
     createInfo.queueFamilyIndexCount = 2;
     createInfo.pQueueFamilyIndices = queueFamilyIndices;
+    SPDLOG_DEBUG("Image sharing mode set to {}", "VK_SHARING_MODE_CONCURRENT");
   } else {
     createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
     createInfo.queueFamilyIndexCount = 0;      // Optional
     createInfo.pQueueFamilyIndices = nullptr;  // Optional
+    SPDLOG_DEBUG("Image sharing mode set to {}", "VK_SHARING_MODE_EXCLUSIVE");
   }
 
   if (vkCreateSwapchainKHR(device, &createInfo, nullptr, &m_swapChain) !=
@@ -93,6 +97,8 @@ SwapChainSupportDetails SwapChain::querySwapChainSupport(
   uint32_t formatCount;
   vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, nullptr);
 
+  SPDLOG_DEBUG("{} physical device surface formats found", formatCount);
+
   if (formatCount != 0) {
     details.formats.resize(formatCount);
     vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount,
@@ -102,6 +108,8 @@ SwapChainSupportDetails SwapChain::querySwapChainSupport(
   uint32_t presentModeCount;
   vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModeCount,
                                             nullptr);
+
+  SPDLOG_DEBUG("{} present modes found", presentModeCount);
 
   if (presentModeCount != 0) {
     details.presentModes.resize(presentModeCount);
@@ -117,9 +125,12 @@ VkSurfaceFormatKHR SwapChain::chooseSwapSurfaceFormat(
   for (const auto &availableFormat : availableFormats) {
     if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB &&
         availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
+      SPDLOG_DEBUG("Ideal surface format found");
       return availableFormat;
     }
   }
+
+  SPDLOG_DEBUG("Unable to find ideal surface format. Falling back to default");
 
   return availableFormats.front();
 }
@@ -128,9 +139,14 @@ VkPresentModeKHR SwapChain::chooseSwapPresentMode(
     const std::vector<VkPresentModeKHR> &availablePresentModes) {
   for (const auto &availablePresentMode : availablePresentModes) {
     if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
+      SPDLOG_DEBUG("Ideal present mode found: VK_PRESENT_MODE_MAILBOX_KHR");
       return availablePresentMode;
     }
   }
+
+  SPDLOG_DEBUG(
+      "Unable to find present mode VK_PRESENT_MODE_MAILBOX_KHR. Falling back "
+      "to VK_PRESENT_MODE_FIFO_KHR");
 
   return VK_PRESENT_MODE_FIFO_KHR;
 }
@@ -143,6 +159,7 @@ VkExtent2D SwapChain::chooseSwapExtent(
       capabilities.currentExtent.width != maxUint32;
 
   if (didVulkanDetectedOptimalExtent) {
+    SPDLOG_DEBUG("Ideal swap extent already set");
     return capabilities.currentExtent;
   }
 

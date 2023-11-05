@@ -30,7 +30,7 @@ class ValidationLayerManager {
       VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger);
 
   static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
-      [[maybe_unused]] VkDebugUtilsMessageSeverityFlagBitsEXT _messageSeverity,
+      [[maybe_unused]] VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
       [[maybe_unused]] VkDebugUtilsMessageTypeFlagsEXT _messageType,
       const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
       [[maybe_unused]] void *_pUserData);

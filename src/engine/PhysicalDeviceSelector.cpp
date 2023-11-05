@@ -30,6 +30,8 @@ PhysicalDeviceSelector::PhysicalDeviceSelector(VkInstance vkInstance,
   vector<VkPhysicalDevice> devices(deviceCount);
   vkEnumeratePhysicalDevices(vkInstance, &deviceCount, devices.data());
 
+  SPDLOG_DEBUG("{} Vulkan compatible devices found", deviceCount);
+
   for (const auto &device : devices) {
     if (isDeviceSuitable(device, surface)) {
       m_selectedDevice = device;
@@ -38,7 +40,7 @@ PhysicalDeviceSelector::PhysicalDeviceSelector(VkInstance vkInstance,
   }
 
   if (m_selectedDevice == VK_NULL_HANDLE) {
-    ABORT("Failed to find a suitable GPU");
+    ABORT("Failed to find a suitable Vulkan compatible device");
   }
 }
 

@@ -8,7 +8,7 @@
 
 namespace engine {
 ValidationLayer::ValidationLayer(VkInstance instance)
-    : m_instance(instance), m_debugMessenger(nullptr) {
+    : m_vkInstance(instance), m_debugMessenger(nullptr) {
   if (!ApplicationConfig::IS_VALIDATION_LAYERS_ENABLED) {
     return;
   }
@@ -18,7 +18,7 @@ ValidationLayer::ValidationLayer(VkInstance instance)
   }
 
   auto createInfo = getDebugMessengerCreateInfo();
-  if (createDebugUtilsMessengerEXT(m_instance, &createInfo,
+  if (createDebugUtilsMessengerEXT(m_vkInstance, &createInfo,
 
                                    &m_debugMessenger) != VK_SUCCESS) {
     ABORT("Failed to set up debug messenger");
@@ -27,7 +27,7 @@ ValidationLayer::ValidationLayer(VkInstance instance)
 
 ValidationLayer::~ValidationLayer() {
   if (ApplicationConfig::IS_VALIDATION_LAYERS_ENABLED) {
-    destroyDebugUtilsMessengerEXT(m_instance, m_debugMessenger);
+    destroyDebugUtilsMessengerEXT(m_vkInstance, m_debugMessenger);
   }
 }
 

@@ -18,7 +18,7 @@ class VulkanInstance {
   [[nodiscard]] VkInstance getHandle() const;
 
  private:
-  VkInstance m_instance;
+  VkInstance m_vkInstance;
 
   VkInstance createInstance(const std::string &applicationName);
 };

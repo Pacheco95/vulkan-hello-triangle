@@ -23,9 +23,9 @@ class Application {
   void run();
 
  private:
-  Window *m_windowManager;
-  VulkanInstance *m_vkInstanceManager;
-  ValidationLayer *m_validationLayerManager;
+  Window *m_window;
+  VulkanInstance *m_vkInstance;
+  ValidationLayer *m_validationLayer;
   Surface *m_surface;
   PhysicalDeviceSelector *m_physicalDeviceSelector;
   LogicalDevice *m_logicalDevice;

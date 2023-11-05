@@ -10,8 +10,7 @@ namespace engine {
 
 class Surface {
  public:
-  explicit Surface(const VulkanInstance &instanceManager,
-                   const Window &windowManager);
+  explicit Surface(const VulkanInstance &vkInstance, const Window &window);
 
   virtual ~Surface();
 
@@ -19,7 +18,7 @@ class Surface {
 
  private:
   VkSurfaceKHR m_surface;
-  const VulkanInstance &m_instanceManager;
+  const VulkanInstance &m_instance;
 };
 
 }  // namespace engine

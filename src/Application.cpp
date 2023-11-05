@@ -3,26 +3,25 @@
 using Buffer = ShaderLoader::Buffer;
 
 Application::Application() {
-  m_windowManager = new Window(ApplicationConfig::WINDOW_WIDTH,
-                               ApplicationConfig::WINDOW_HEIGHT,
-                               ApplicationConfig::WINDOW_TITLE);
+  m_window = new Window(ApplicationConfig::WINDOW_WIDTH,
+                        ApplicationConfig::WINDOW_HEIGHT,
+                        ApplicationConfig::WINDOW_TITLE);
 
-  m_vkInstanceManager = new VulkanInstance(ApplicationConfig::APP_NAME);
+  m_vkInstance = new VulkanInstance(ApplicationConfig::APP_NAME);
 
-  m_validationLayerManager =
-      new ValidationLayer(m_vkInstanceManager->getHandle());
+  m_validationLayer = new ValidationLayer(m_vkInstance->getHandle());
 
-  m_surface = new Surface(*m_vkInstanceManager, *m_windowManager);
+  m_surface = new Surface(*m_vkInstance, *m_window);
 
   m_physicalDeviceSelector = new PhysicalDeviceSelector(
-      m_vkInstanceManager->getHandle(), m_surface->getHandle());
+      m_vkInstance->getHandle(), m_surface->getHandle());
 
   m_logicalDevice = new LogicalDevice(m_physicalDeviceSelector->getHandle(),
                                       m_surface->getHandle());
 
   VkDevice device = m_logicalDevice->getHandle();
 
-  m_swapChain = new SwapChain(m_windowManager->getHandle(),
+  m_swapChain = new SwapChain(m_window->getHandle(),
                               m_physicalDeviceSelector->getHandle(), device,
                               m_surface->getHandle());
 
@@ -37,8 +36,8 @@ Application::Application() {
 }
 
 void Application::run() {
-  while (m_windowManager->isOpen()) {
-    m_windowManager->pollEvents();
+  while (m_window->isOpen()) {
+    m_window->pollEvents();
   }
 }
 
@@ -49,7 +48,7 @@ Application::~Application() {
   delete m_logicalDevice;
   delete m_physicalDeviceSelector;
   delete m_surface;
-  delete m_validationLayerManager;
-  delete m_vkInstanceManager;
-  delete m_windowManager;
+  delete m_validationLayer;
+  delete m_vkInstance;
+  delete m_window;
 }

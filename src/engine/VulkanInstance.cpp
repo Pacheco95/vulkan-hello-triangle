@@ -11,7 +11,7 @@ using engine::ValidationLayer;
 
 [[maybe_unused]] VulkanInstance::VulkanInstance(
     const std::string &applicationName)
-    : m_instance(createInstance(applicationName)) {}
+    : m_vkInstance(createInstance(applicationName)) {}
 
 VkInstance VulkanInstance::createInstance(const std::string &applicationName) {
   VkApplicationInfo appInfo{};
@@ -37,16 +37,16 @@ VkInstance VulkanInstance::createInstance(const std::string &applicationName) {
   ValidationLayer::fillInstanceValidationLayerDebugInfo(vkInstanceCreateInfo,
                                                         debugCreateInfo);
 
-  if (vkCreateInstance(&vkInstanceCreateInfo, nullptr, &m_instance) !=
+  if (vkCreateInstance(&vkInstanceCreateInfo, nullptr, &m_vkInstance) !=
       VK_SUCCESS) {
     ABORT("Failed to create vulkan instance");
   }
 
-  return m_instance;
+  return m_vkInstance;
 }
 
-VulkanInstance::~VulkanInstance() { vkDestroyInstance(m_instance, nullptr); }
+VulkanInstance::~VulkanInstance() { vkDestroyInstance(m_vkInstance, nullptr); }
 
-VkInstance VulkanInstance::getHandle() const { return m_instance; }
+VkInstance VulkanInstance::getHandle() const { return m_vkInstance; }
 
 }  // namespace engine

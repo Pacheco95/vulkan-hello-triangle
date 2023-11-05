@@ -18,7 +18,7 @@ class ValidationLayer {
   static VkDebugUtilsMessengerCreateInfoEXT getDebugMessengerCreateInfo();
 
  private:
-  VkInstance m_instance;
+  VkInstance m_vkInstance;
   VkDebugUtilsMessengerEXT m_debugMessenger;
 
   static VkResult createDebugUtilsMessengerEXT(

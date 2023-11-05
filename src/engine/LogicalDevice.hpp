@@ -17,7 +17,7 @@ class LogicalDevice {
 
   [[nodiscard]] VkQueue getGraphicsQueue() const { return m_graphicsQueue; };
 
-  [[nodiscard]] VkDevice getDevice() const;
+  [[nodiscard]] VkDevice getHandle() const;
 
  private:
   VkDevice m_device;

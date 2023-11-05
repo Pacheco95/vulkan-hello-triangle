@@ -10,27 +10,26 @@ Application::Application() {
   m_vkInstanceManager = new VulkanInstanceManager(ApplicationConfig::APP_NAME);
 
   m_validationLayerManager =
-      new ValidationLayerManager(m_vkInstanceManager->getInstance());
+      new ValidationLayerManager(m_vkInstanceManager->getHandle());
 
   m_surface = new Surface(*m_vkInstanceManager, *m_windowManager);
 
   m_physicalDeviceSelector = new PhysicalDeviceSelector(
-      m_vkInstanceManager->getInstance(), m_surface->getSurface());
+      m_vkInstanceManager->getHandle(), m_surface->getHandle());
 
-  VkPhysicalDevice physicalDevice =
-      m_physicalDeviceSelector->getSelectedDevice();
+  m_logicalDevice = new LogicalDevice(m_physicalDeviceSelector->getHandle(),
+                                      m_surface->getHandle());
 
-  m_logicalDevice = new LogicalDevice(physicalDevice, m_surface->getSurface());
+  VkDevice device = m_logicalDevice->getHandle();
 
-  VkDevice device = m_logicalDevice->getDevice();
+  m_swapChain = new SwapChain(m_windowManager->getHandle(),
+                              m_physicalDeviceSelector->getHandle(), device,
+                              m_surface->getHandle());
 
-  m_swapChain = new SwapChain(m_windowManager->getWindow(), physicalDevice,
-                              device, m_surface->getSurface());
+  m_renderPass = new RenderPass(device, *m_swapChain);
 
   Buffer fragShaderByteCode = ShaderLoader::load("res/shaders/frag.spv");
   Buffer vertShaderByteCode = ShaderLoader::load("res/shaders/vert.spv");
-
-  m_renderPass = new RenderPass(device, *m_swapChain);
 
   m_graphicsPipeline =
       new GraphicsPipeline(device, vertShaderByteCode, fragShaderByteCode,

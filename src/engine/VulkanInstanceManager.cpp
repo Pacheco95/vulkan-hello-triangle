@@ -50,6 +50,6 @@ VulkanInstanceManager::~VulkanInstanceManager() {
   vkDestroyInstance(m_instance, nullptr);
 }
 
-VkInstance VulkanInstanceManager::getInstance() const { return m_instance; }
+VkInstance VulkanInstanceManager::getHandle() const { return m_instance; }
 
 }  // namespace engine

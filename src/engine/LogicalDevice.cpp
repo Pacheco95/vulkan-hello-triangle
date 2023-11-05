@@ -72,5 +72,5 @@ std::vector<VkDeviceQueueCreateInfo> LogicalDevice::getQueueCreateInfos(
 
 LogicalDevice::~LogicalDevice() { vkDestroyDevice(m_device, nullptr); }
 
-VkDevice LogicalDevice::getDevice() const { return m_device; }
+VkDevice LogicalDevice::getHandle() const { return m_device; }
 }  // namespace engine

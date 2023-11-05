@@ -41,5 +41,5 @@ RenderPass::~RenderPass() {
   vkDestroyRenderPass(m_device, m_renderPass, nullptr);
 }
 
-VkRenderPass RenderPass::getPass() const { return m_renderPass; }
+VkRenderPass RenderPass::getHandle() const { return m_renderPass; }
 }  // namespace engine

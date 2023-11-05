@@ -63,7 +63,7 @@ bool PhysicalDeviceSelector::isDeviceSuitable(VkPhysicalDevice device,
   return indices.isComplete() && extensionsSupported && isSwapChainAdequate;
 }
 
-VkPhysicalDevice PhysicalDeviceSelector::getSelectedDevice() const {
+VkPhysicalDevice PhysicalDeviceSelector::getHandle() const {
   return m_selectedDevice;
 }
 

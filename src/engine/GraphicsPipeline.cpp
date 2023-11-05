@@ -18,7 +18,7 @@ GraphicsPipeline::GraphicsPipeline(VkDevice device, ByteCode vertShaderByteCode,
   ShaderStages shaderStages =
       getShaderStages(vertShaderModule, fragShaderModule);
 
-  createPipeline(swapChain, shaderStages, renderPass.getPass());
+  createPipeline(swapChain, shaderStages, renderPass.getHandle());
 
   vkDestroyShaderModule(m_device, fragShaderModule, nullptr);
   vkDestroyShaderModule(m_device, vertShaderModule, nullptr);

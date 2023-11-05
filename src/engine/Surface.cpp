@@ -8,8 +8,8 @@ namespace engine {
 Surface::Surface(const VulkanInstanceManager &instanceManager,
                  const WindowManager &windowManager)
     : m_surface(nullptr), m_instanceManager(instanceManager) {
-  VkInstance instance = instanceManager.getInstance();
-  GLFWwindow *window = windowManager.getWindow();
+  VkInstance instance = instanceManager.getHandle();
+  GLFWwindow *window = windowManager.getHandle();
 
   if (glfwCreateWindowSurface(instance, window, nullptr, &m_surface) !=
       VK_SUCCESS) {
@@ -18,8 +18,8 @@ Surface::Surface(const VulkanInstanceManager &instanceManager,
 }
 
 Surface::~Surface() {
-  vkDestroySurfaceKHR(m_instanceManager.getInstance(), m_surface, nullptr);
+  vkDestroySurfaceKHR(m_instanceManager.getHandle(), m_surface, nullptr);
 }
 
-VkSurfaceKHR Surface::getSurface() const { return m_surface; }
+VkSurfaceKHR Surface::getHandle() const { return m_surface; }
 }  // namespace engine

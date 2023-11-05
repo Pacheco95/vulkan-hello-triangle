@@ -13,7 +13,7 @@ class RenderPass {
   explicit RenderPass(VkDevice device, const SwapChain& swapChain);
   virtual ~RenderPass();
 
-  [[nodiscard]] VkRenderPass getPass() const;
+  [[nodiscard]] VkRenderPass getHandle() const;
 
  private:
   VkDevice m_device;

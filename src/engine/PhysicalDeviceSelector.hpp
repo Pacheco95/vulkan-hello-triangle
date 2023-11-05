@@ -9,7 +9,7 @@ class PhysicalDeviceSelector {
  public:
   explicit PhysicalDeviceSelector(VkInstance vkInstance, VkSurfaceKHR surface);
 
-  [[nodiscard]] VkPhysicalDevice getSelectedDevice() const;
+  [[nodiscard]] VkPhysicalDevice getHandle() const;
 
  private:
   VkPhysicalDevice m_selectedDevice = VK_NULL_HANDLE;

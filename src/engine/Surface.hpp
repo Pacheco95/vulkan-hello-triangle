@@ -15,7 +15,7 @@ class Surface {
 
   virtual ~Surface();
 
-  [[nodiscard]] VkSurfaceKHR getSurface() const;
+  [[nodiscard]] VkSurfaceKHR getHandle() const;
 
  private:
   VkSurfaceKHR m_surface;

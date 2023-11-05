@@ -5,8 +5,8 @@
 #include "Abort.hpp"
 
 namespace engine {
-Surface::Surface(const VulkanInstanceManager &instanceManager,
-                 const WindowManager &windowManager)
+Surface::Surface(const VulkanInstance &instanceManager,
+                 const Window &windowManager)
     : m_surface(nullptr), m_instanceManager(instanceManager) {
   VkInstance instance = instanceManager.getHandle();
   GLFWwindow *window = windowManager.getHandle();

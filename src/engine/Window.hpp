@@ -1,5 +1,5 @@
-#ifndef WINDOW_MANAGER_HPP
-#define WINDOW_MANAGER_HPP
+#ifndef WINDOW_HPP
+#define WINDOW_HPP
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "OCUnusedMacroInspection"
@@ -14,12 +14,11 @@
 
 namespace engine {
 
-class WindowManager {
+class Window {
  public:
-  WindowManager(std::size_t width, std::size_t height,
-                const std::string &title);
+  Window(std::size_t width, std::size_t height, const std::string &title);
 
-  virtual ~WindowManager();
+  virtual ~Window();
 
   [[nodiscard]] bool isOpen() const;
 
@@ -37,4 +36,4 @@ class WindowManager {
 
 }  // namespace engine
 
-#endif  // WINDOW_MANAGER_HPP
+#endif  // WINDOW_HPP

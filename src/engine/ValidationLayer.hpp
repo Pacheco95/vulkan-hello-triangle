@@ -1,15 +1,15 @@
-#ifndef VALIDATION_LAYER_MANAGER_HPP
-#define VALIDATION_LAYER_MANAGER_HPP
+#ifndef VALIDATION_LAYER_HPP
+#define VALIDATION_LAYER_HPP
 
 #include <vulkan/vulkan.h>
 
 namespace engine {
 
-class ValidationLayerManager {
+class ValidationLayer {
  public:
-  explicit ValidationLayerManager(VkInstance instance);
+  explicit ValidationLayer(VkInstance instance);
 
-  virtual ~ValidationLayerManager();
+  virtual ~ValidationLayer();
 
   static void fillInstanceValidationLayerDebugInfo(
       VkInstanceCreateInfo &vkInstanceCreateInfo,
@@ -40,4 +40,4 @@ class ValidationLayerManager {
 
 }  // namespace engine
 
-#endif  // VALIDATION_LAYER_MANAGER_HPP
+#endif  // VALIDATION_LAYER_HPP

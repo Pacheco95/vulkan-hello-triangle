@@ -22,14 +22,14 @@ find_package(Vulkan REQUIRED)
 add_subdirectory(external/spdlog)
 
 add_executable(VulkanHelloTriangle src/main.cpp
-        src/engine/VulkanInstanceManager.cpp
-        src/engine/VulkanInstanceManager.hpp
-        src/engine/WindowManager.cpp
-        src/engine/WindowManager.hpp
+        src/engine/VulkanInstance.cpp
+        src/engine/VulkanInstance.hpp
+        src/engine/Window.cpp
+        src/engine/Window.hpp
         src/engine/ApplicationConfig.cpp
         src/engine/ApplicationConfig.hpp
-        src/engine/ValidationLayerManager.cpp
-        src/engine/ValidationLayerManager.hpp
+        src/engine/ValidationLayer.cpp
+        src/engine/ValidationLayer.hpp
         src/Application.cpp
         src/Application.hpp
         src/engine/PhysicalDeviceSelector.cpp

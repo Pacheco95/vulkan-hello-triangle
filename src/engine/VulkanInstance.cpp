@@ -1,20 +1,19 @@
-#include "VulkanInstanceManager.hpp"
+#include "VulkanInstance.hpp"
 
 #include <stdexcept>
 
 #include "Abort.hpp"
 #include "ApplicationConfig.hpp"
-#include "WindowManager.hpp"
+#include "Window.hpp"
 
 namespace engine {
-using engine::ValidationLayerManager;
+using engine::ValidationLayer;
 
-[[maybe_unused]] VulkanInstanceManager::VulkanInstanceManager(
+[[maybe_unused]] VulkanInstance::VulkanInstance(
     const std::string &applicationName)
     : m_instance(createInstance(applicationName)) {}
 
-VkInstance VulkanInstanceManager::createInstance(
-    const std::string &applicationName) {
+VkInstance VulkanInstance::createInstance(const std::string &applicationName) {
   VkApplicationInfo appInfo{};
   appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
   appInfo.pApplicationName = applicationName.c_str();
@@ -24,7 +23,7 @@ VkInstance VulkanInstanceManager::createInstance(
   appInfo.apiVersion = VK_API_VERSION_1_0;
 
   std::vector<const char *> requiredExtensions =
-      WindowManager::getRequiredExtensions();
+      Window::getRequiredExtensions();
 
   VkInstanceCreateInfo vkInstanceCreateInfo{};
   vkInstanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -33,10 +32,10 @@ VkInstance VulkanInstanceManager::createInstance(
   vkInstanceCreateInfo.ppEnabledExtensionNames = requiredExtensions.data();
 
   VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo =
-      ValidationLayerManager::getDebugMessengerCreateInfo();
+      ValidationLayer::getDebugMessengerCreateInfo();
 
-  ValidationLayerManager::fillInstanceValidationLayerDebugInfo(
-      vkInstanceCreateInfo, debugCreateInfo);
+  ValidationLayer::fillInstanceValidationLayerDebugInfo(vkInstanceCreateInfo,
+                                                        debugCreateInfo);
 
   if (vkCreateInstance(&vkInstanceCreateInfo, nullptr, &m_instance) !=
       VK_SUCCESS) {
@@ -46,10 +45,8 @@ VkInstance VulkanInstanceManager::createInstance(
   return m_instance;
 }
 
-VulkanInstanceManager::~VulkanInstanceManager() {
-  vkDestroyInstance(m_instance, nullptr);
-}
+VulkanInstance::~VulkanInstance() { vkDestroyInstance(m_instance, nullptr); }
 
-VkInstance VulkanInstanceManager::getHandle() const { return m_instance; }
+VkInstance VulkanInstance::getHandle() const { return m_instance; }
 
 }  // namespace engine

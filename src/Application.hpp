@@ -8,9 +8,9 @@
 #include "RenderPass.hpp"
 #include "Surface.hpp"
 #include "SwapChain.hpp"
-#include "ValidationLayerManager.hpp"
-#include "VulkanInstanceManager.hpp"
-#include "WindowManager.hpp"
+#include "ValidationLayer.hpp"
+#include "VulkanInstance.hpp"
+#include "Window.hpp"
 
 using namespace engine;
 
@@ -23,9 +23,9 @@ class Application {
   void run();
 
  private:
-  WindowManager *m_windowManager;
-  VulkanInstanceManager *m_vkInstanceManager;
-  ValidationLayerManager *m_validationLayerManager;
+  Window *m_windowManager;
+  VulkanInstance *m_vkInstanceManager;
+  ValidationLayer *m_validationLayerManager;
   Surface *m_surface;
   PhysicalDeviceSelector *m_physicalDeviceSelector;
   LogicalDevice *m_logicalDevice;

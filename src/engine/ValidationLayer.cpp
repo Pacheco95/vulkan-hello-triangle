@@ -1,4 +1,4 @@
-#include "ValidationLayerManager.hpp"
+#include "ValidationLayer.hpp"
 
 #include <cstring>
 #include <iostream>
@@ -7,7 +7,7 @@
 #include "ApplicationConfig.hpp"
 
 namespace engine {
-ValidationLayerManager::ValidationLayerManager(VkInstance instance)
+ValidationLayer::ValidationLayer(VkInstance instance)
     : m_instance(instance), m_debugMessenger(nullptr) {
   if (!ApplicationConfig::IS_VALIDATION_LAYERS_ENABLED) {
     return;
@@ -25,13 +25,13 @@ ValidationLayerManager::ValidationLayerManager(VkInstance instance)
   }
 }
 
-ValidationLayerManager::~ValidationLayerManager() {
+ValidationLayer::~ValidationLayer() {
   if (ApplicationConfig::IS_VALIDATION_LAYERS_ENABLED) {
     destroyDebugUtilsMessengerEXT(m_instance, m_debugMessenger);
   }
 }
 
-VKAPI_ATTR VkBool32 VKAPI_CALL ValidationLayerManager::debugCallback(
+VKAPI_ATTR VkBool32 VKAPI_CALL ValidationLayer::debugCallback(
     [[maybe_unused]] VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
     [[maybe_unused]] VkDebugUtilsMessageTypeFlagsEXT _messageType,
     const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
@@ -52,7 +52,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL ValidationLayerManager::debugCallback(
 }
 
 VkDebugUtilsMessengerCreateInfoEXT
-ValidationLayerManager::getDebugMessengerCreateInfo() {
+ValidationLayer::getDebugMessengerCreateInfo() {
   VkDebugUtilsMessengerCreateInfoEXT createInfo{};
 
   createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
@@ -70,7 +70,7 @@ ValidationLayerManager::getDebugMessengerCreateInfo() {
   return createInfo;
 }
 
-bool ValidationLayerManager::checkValidationLayerSupport() {
+bool ValidationLayer::checkValidationLayerSupport() {
   uint32_t layerCount;
   vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
 
@@ -95,7 +95,7 @@ bool ValidationLayerManager::checkValidationLayerSupport() {
   return true;
 }
 
-VkResult ValidationLayerManager::createDebugUtilsMessengerEXT(
+VkResult ValidationLayer::createDebugUtilsMessengerEXT(
     VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT *pCreateInfo,
     VkDebugUtilsMessengerEXT *pDebugMessenger) {
   auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(
@@ -108,7 +108,7 @@ VkResult ValidationLayerManager::createDebugUtilsMessengerEXT(
   return func(instance, pCreateInfo, nullptr, pDebugMessenger);
 }
 
-void ValidationLayerManager::destroyDebugUtilsMessengerEXT(
+void ValidationLayer::destroyDebugUtilsMessengerEXT(
     VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger) {
   auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(
       instance, "vkDestroyDebugUtilsMessengerEXT");
@@ -118,7 +118,7 @@ void ValidationLayerManager::destroyDebugUtilsMessengerEXT(
   }
 }
 
-void ValidationLayerManager::fillInstanceValidationLayerDebugInfo(
+void ValidationLayer::fillInstanceValidationLayerDebugInfo(
     VkInstanceCreateInfo &vkInstanceCreateInfo,
     const VkDebugUtilsMessengerCreateInfoEXT &debugCreateInfo) {
   if (!ApplicationConfig::IS_VALIDATION_LAYERS_ENABLED) {

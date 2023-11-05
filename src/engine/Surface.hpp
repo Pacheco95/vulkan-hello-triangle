@@ -3,15 +3,15 @@
 
 #include <vulkan/vulkan.h>
 
-#include "VulkanInstanceManager.hpp"
-#include "WindowManager.hpp"
+#include "VulkanInstance.hpp"
+#include "Window.hpp"
 
 namespace engine {
 
 class Surface {
  public:
-  explicit Surface(const VulkanInstanceManager &instanceManager,
-                   const WindowManager &windowManager);
+  explicit Surface(const VulkanInstance &instanceManager,
+                   const Window &windowManager);
 
   virtual ~Surface();
 
@@ -19,7 +19,7 @@ class Surface {
 
  private:
   VkSurfaceKHR m_surface;
-  const VulkanInstanceManager &m_instanceManager;
+  const VulkanInstance &m_instanceManager;
 };
 
 }  // namespace engine

@@ -1,4 +1,4 @@
-#include "WindowManager.hpp"
+#include "Window.hpp"
 
 #include <stdexcept>
 
@@ -6,8 +6,7 @@
 #include "ApplicationConfig.hpp"
 
 namespace engine {
-WindowManager::WindowManager(size_t width, size_t height,
-                             const std::string &title) {
+Window::Window(size_t width, size_t height, const std::string &title) {
   const char *initErrorMessage = "Failed to create window";
 
   if (!glfwInit()) {
@@ -27,7 +26,7 @@ WindowManager::WindowManager(size_t width, size_t height,
   centerWindow();
 }
 
-WindowManager::~WindowManager() {
+Window::~Window() {
   if (m_window) {
     glfwDestroyWindow(m_window);
   }
@@ -35,7 +34,7 @@ WindowManager::~WindowManager() {
   glfwTerminate();
 }
 
-bool WindowManager::isOpen() const {
+bool Window::isOpen() const {
   bool shouldClose = glfwGetKey(m_window, GLFW_KEY_ESCAPE) == GLFW_PRESS;
   shouldClose = shouldClose || glfwWindowShouldClose(m_window);
   return !shouldClose;
@@ -44,11 +43,11 @@ bool WindowManager::isOpen() const {
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "readability-convert-member-functions-to-static"
 
-void WindowManager::pollEvents() { glfwPollEvents(); }
+void Window::pollEvents() { glfwPollEvents(); }
 
 #pragma clang diagnostic pop
 
-std::vector<const char *> WindowManager::getRequiredExtensions() {
+std::vector<const char *> Window::getRequiredExtensions() {
   uint32_t glfwExtensionCount = 0;
   const char **glfwExtensions =
       glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
@@ -63,7 +62,7 @@ std::vector<const char *> WindowManager::getRequiredExtensions() {
   return extensions;
 }
 
-void WindowManager::centerWindow() {
+void Window::centerWindow() {
   GLFWmonitor *monitor = glfwGetPrimaryMonitor();
   const GLFWvidmode *mode = glfwGetVideoMode(monitor);
   int xPos = (mode->width - 800) / 2;
@@ -71,6 +70,6 @@ void WindowManager::centerWindow() {
   glfwSetWindowPos(m_window, xPos, yPos);
 }
 
-GLFWwindow *WindowManager::getHandle() const { return m_window; }
+GLFWwindow *Window::getHandle() const { return m_window; }
 
 }  // namespace engine

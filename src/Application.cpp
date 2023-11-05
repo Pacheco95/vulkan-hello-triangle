@@ -3,14 +3,14 @@
 using Buffer = ShaderLoader::Buffer;
 
 Application::Application() {
-  m_windowManager = new WindowManager(ApplicationConfig::WINDOW_WIDTH,
-                                      ApplicationConfig::WINDOW_HEIGHT,
-                                      ApplicationConfig::WINDOW_TITLE);
+  m_windowManager = new Window(ApplicationConfig::WINDOW_WIDTH,
+                               ApplicationConfig::WINDOW_HEIGHT,
+                               ApplicationConfig::WINDOW_TITLE);
 
-  m_vkInstanceManager = new VulkanInstanceManager(ApplicationConfig::APP_NAME);
+  m_vkInstanceManager = new VulkanInstance(ApplicationConfig::APP_NAME);
 
   m_validationLayerManager =
-      new ValidationLayerManager(m_vkInstanceManager->getHandle());
+      new ValidationLayer(m_vkInstanceManager->getHandle());
 
   m_surface = new Surface(*m_vkInstanceManager, *m_windowManager);
 

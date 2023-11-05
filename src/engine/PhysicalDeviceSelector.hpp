@@ -14,7 +14,6 @@ class PhysicalDeviceSelector {
  private:
   VkPhysicalDevice m_selectedDevice = VK_NULL_HANDLE;
 
- private:
   static bool isDeviceSuitable(VkPhysicalDevice device, VkSurfaceKHR surface);
 
   static bool checkDeviceExtensionSupport(VkPhysicalDevice device);

@@ -24,6 +24,8 @@ class SwapChain {
   static SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device,
                                                        VkSurfaceKHR surface);
 
+  [[nodiscard]] VkFormat getSwapChainImageFormat() const;
+
  private:
   VkSwapchainKHR m_swapChain;
   VkDevice m_device;

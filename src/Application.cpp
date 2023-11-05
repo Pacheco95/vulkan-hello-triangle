@@ -28,9 +28,9 @@ Application::Application() {
   Buffer fragShaderByteCode = ShaderLoader::load("res/shaders/frag.spv");
   Buffer vertShaderByteCode = ShaderLoader::load("res/shaders/vert.spv");
 
-  m_graphicsPipeline = new GraphicsPipeline(
-      m_logicalDevice->getDevice(), vertShaderByteCode, fragShaderByteCode,
-      m_swapChain->getSwapChainExtent());
+  m_graphicsPipeline =
+      new GraphicsPipeline(m_logicalDevice->getDevice(), vertShaderByteCode,
+                           fragShaderByteCode, *m_swapChain);
 }
 
 void Application::run() {

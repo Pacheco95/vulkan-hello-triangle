@@ -3,10 +3,10 @@
 #include <vector>
 
 namespace engine {
-GraphicsPipeline::GraphicsPipeline(VkDevice device, ByteCode vertShaderByteCode,
-                                   ByteCode fragShaderByteCode,
-                                   VkExtent2D swapChainExtent)
-    : m_device(device), m_pipelineLayout(nullptr) {
+GraphicsPipeline::GraphicsPipeline(
+    VkDevice device, const ShaderLoader::Buffer& vertShaderByteCode,
+    const ShaderLoader::Buffer& fragShaderByteCode, const SwapChain& swapChain)
+    : m_device(device), m_pipelineLayout(nullptr), renderPass(nullptr) {
   VkShaderModule vertShaderModule =
       createShaderModule(vertShaderByteCode, device);
 
@@ -52,6 +52,7 @@ GraphicsPipeline::GraphicsPipeline(VkDevice device, ByteCode vertShaderByteCode,
   inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
   inputAssembly.primitiveRestartEnable = VK_FALSE;
 
+  auto swapChainExtent = swapChain.getSwapChainExtent();
   VkViewport viewport{};
   viewport.x = 0.0f;
   viewport.y = 0.0f;
@@ -122,12 +123,17 @@ GraphicsPipeline::GraphicsPipeline(VkDevice device, ByteCode vertShaderByteCode,
     ABORT("Failed to create pipeline layout");
   }
 
+  createRenderPass(swapChain.getSwapChainImageFormat());
+
   vkDestroyShaderModule(device, fragShaderModule, nullptr);
   vkDestroyShaderModule(device, vertShaderModule, nullptr);
 }
+
 GraphicsPipeline::~GraphicsPipeline() {
   vkDestroyPipelineLayout(m_device, m_pipelineLayout, nullptr);
+  vkDestroyRenderPass(m_device, renderPass, nullptr);
 }
+
 VkShaderModule GraphicsPipeline::createShaderModule(ByteCode ShaderByteCode,
                                                     VkDevice device) {
   VkShaderModuleCreateInfo createInfo{};
@@ -143,5 +149,38 @@ VkShaderModule GraphicsPipeline::createShaderModule(ByteCode ShaderByteCode,
   }
 
   return shaderModule;
+}
+
+void GraphicsPipeline::createRenderPass(VkFormat swapChainImageFormat) {
+  VkAttachmentDescription colorAttachment{};
+  colorAttachment.format = swapChainImageFormat;
+  colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+  colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+  colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+  colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+  colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+  colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+  colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+  VkAttachmentReference colorAttachmentRef{};
+  colorAttachmentRef.attachment = 0;
+  colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+  VkSubpassDescription subPass{};
+  subPass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+  subPass.colorAttachmentCount = 1;
+  subPass.pColorAttachments = &colorAttachmentRef;
+
+  VkRenderPassCreateInfo renderPassInfo{};
+  renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+  renderPassInfo.attachmentCount = 1;
+  renderPassInfo.pAttachments = &colorAttachment;
+  renderPassInfo.subpassCount = 1;
+  renderPassInfo.pSubpasses = &subPass;
+
+  if (vkCreateRenderPass(m_device, &renderPassInfo, nullptr, &renderPass) !=
+      VK_SUCCESS) {
+    ABORT("failed to create render pass");
+  }
 }
 }  // namespace engine

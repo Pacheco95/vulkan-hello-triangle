@@ -211,5 +211,10 @@ VkExtent2D SwapChain::chooseSwapExtent(
 
   return actualExtent;
 }
+
 VkExtent2D SwapChain::getSwapChainExtent() const { return m_swapChainExtent; }
+
+VkFormat SwapChain::getSwapChainImageFormat() const {
+  return m_swapChainImageFormat;
+}
 }  // namespace engine

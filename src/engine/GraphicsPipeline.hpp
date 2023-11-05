@@ -11,8 +11,7 @@ using ByteCode = const ShaderLoader::Buffer&;
 class GraphicsPipeline {
  public:
   GraphicsPipeline(VkDevice device, ByteCode vertShaderByteCode,
-                   ByteCode fragShaderByteCode,
-                   VkExtent2D swapChainExtent);
+                   ByteCode fragShaderByteCode, VkExtent2D swapChainExtent);
 
   virtual ~GraphicsPipeline();
 

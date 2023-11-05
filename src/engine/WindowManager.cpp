@@ -2,6 +2,7 @@
 
 #include <stdexcept>
 
+#include "Abort.hpp"
 #include "ApplicationConfig.hpp"
 
 namespace engine {
@@ -10,7 +11,7 @@ WindowManager::WindowManager(size_t width, size_t height,
   const char *initErrorMessage = "Failed to create window";
 
   if (!glfwInit()) {
-    throw std::runtime_error(initErrorMessage);
+    ABORT(initErrorMessage);
   }
 
   glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
@@ -20,7 +21,7 @@ WindowManager::WindowManager(size_t width, size_t height,
                               title.c_str(), nullptr, nullptr);
 
   if (!m_window) {
-    throw std::runtime_error(initErrorMessage);
+    ABORT(initErrorMessage);
   }
 
   centerWindow();

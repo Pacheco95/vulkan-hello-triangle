@@ -3,6 +3,7 @@
 #include <set>
 #include <stdexcept>
 
+#include "Abort.hpp"
 #include "ApplicationConfig.hpp"
 #include "QueueFamilyUtils.hpp"
 
@@ -36,7 +37,7 @@ LogicalDevice::LogicalDevice(VkPhysicalDevice physicalDevice,
 
   if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &m_device) !=
       VK_SUCCESS) {
-    throw std::runtime_error("Failed to create logical device");
+    ABORT("Failed to create logical device");
   }
 
   vkGetDeviceQueue(m_device, indices.graphicsFamily.value(), 0,

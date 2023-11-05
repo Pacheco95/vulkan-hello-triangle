@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include <vector>
 
+#include "Abort.hpp"
 #include "ApplicationConfig.hpp"
 #include "QueueFamilyUtils.hpp"
 #include "SwapChain.hpp"
@@ -23,7 +24,7 @@ PhysicalDeviceSelector::PhysicalDeviceSelector(VkInstance vkInstance,
   vkEnumeratePhysicalDevices(vkInstance, &deviceCount, nullptr);
 
   if (deviceCount == 0) {
-    throw runtime_error("Failed to find GPUs with Vulkan support");
+    ABORT("Failed to find GPUs with Vulkan support");
   }
 
   vector<VkPhysicalDevice> devices(deviceCount);
@@ -37,7 +38,7 @@ PhysicalDeviceSelector::PhysicalDeviceSelector(VkInstance vkInstance,
   }
 
   if (m_selectedDevice == VK_NULL_HANDLE) {
-    throw runtime_error("Failed to find a suitable GPU");
+    ABORT("Failed to find a suitable GPU");
   }
 }
 

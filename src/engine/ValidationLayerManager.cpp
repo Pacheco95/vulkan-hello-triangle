@@ -3,6 +3,7 @@
 #include <cstring>
 #include <iostream>
 
+#include "Abort.hpp"
 #include "ApplicationConfig.hpp"
 
 namespace engine {
@@ -13,15 +14,14 @@ ValidationLayerManager::ValidationLayerManager(VkInstance instance)
   }
 
   if (!checkValidationLayerSupport()) {
-    throw std::runtime_error(
-        "One or more validation layers requested not available");
+    ABORT("One or more validation layers requested not available");
   }
 
   auto createInfo = getDebugMessengerCreateInfo();
   if (createDebugUtilsMessengerEXT(m_instance, &createInfo,
 
                                    &m_debugMessenger) != VK_SUCCESS) {
-    throw std::runtime_error("Failed to set up debug messenger");
+    ABORT("Failed to set up debug messenger");
   }
 }
 

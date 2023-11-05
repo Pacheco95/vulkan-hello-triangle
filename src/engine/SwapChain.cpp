@@ -4,6 +4,8 @@
 #include <limits>
 #include <stdexcept>
 
+#include "Abort.hpp"
+
 uint32_t getImageCount(
     const engine::SwapChainSupportDetails &swapChainSupport) {
   bool hasLimitedImages = swapChainSupport.capabilities.maxImageCount > 0;
@@ -68,7 +70,7 @@ SwapChain::SwapChain(GLFWwindow *window, VkPhysicalDevice physicalDevice,
 
   if (vkCreateSwapchainKHR(device, &createInfo, nullptr, &m_swapChain) !=
       VK_SUCCESS) {
-    throw std::runtime_error("Failed to create swap chain");
+    ABORT("Failed to create swap chain");
   }
 
   vkGetSwapchainImagesKHR(device, m_swapChain, &imageCount, nullptr);

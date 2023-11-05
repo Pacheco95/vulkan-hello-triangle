@@ -2,6 +2,8 @@
 
 #include <stdexcept>
 
+#include "Abort.hpp"
+
 namespace engine {
 Surface::Surface(const VulkanInstanceManager &instanceManager,
                  const WindowManager &windowManager)
@@ -11,7 +13,7 @@ Surface::Surface(const VulkanInstanceManager &instanceManager,
 
   if (glfwCreateWindowSurface(instance, window, nullptr, &m_surface) !=
       VK_SUCCESS) {
-    throw std::runtime_error("Failed to create window surface");
+    ABORT("Failed to create window surface");
   }
 }
 

@@ -2,6 +2,7 @@
 
 #include <stdexcept>
 
+#include "Abort.hpp"
 #include "ApplicationConfig.hpp"
 #include "WindowManager.hpp"
 
@@ -39,7 +40,7 @@ VkInstance VulkanInstanceManager::createInstance(
 
   if (vkCreateInstance(&vkInstanceCreateInfo, nullptr, &m_instance) !=
       VK_SUCCESS) {
-    throw std::runtime_error("Failed to create vulkan instance");
+    ABORT("Failed to create vulkan instance");
   }
 
   return m_instance;

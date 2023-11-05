@@ -4,10 +4,22 @@ project(VulkanHelloTriangle)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2")
 
-include_directories("src/engine")
+
+if (CMAKE_BUILD_TYPE STREQUAL "Release")
+  add_compile_definitions(SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_WARN)
+else ()
+  add_compile_definitions(SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_TRACE)
+endif ()
+
+include_directories(
+        src/engine
+        external/spdlog/include
+)
 
 find_package(glfw3 REQUIRED)
 find_package(Vulkan REQUIRED)
+
+add_subdirectory(external/spdlog)
 
 add_executable(VulkanHelloTriangle src/main.cpp
         src/engine/VulkanInstanceManager.cpp
@@ -29,12 +41,14 @@ add_executable(VulkanHelloTriangle src/main.cpp
         src/engine/Surface.cpp
         src/engine/Surface.hpp
         src/engine/SwapChain.cpp
-        src/engine/SwapChain.hpp)
+        src/engine/SwapChain.hpp
+        src/engine/Abort.hpp)
 
 target_link_libraries(VulkanHelloTriangle
         PRIVATE
         glfw
         Vulkan::Vulkan
+        spdlog
         dl
         pthread
         X11

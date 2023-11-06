@@ -37,10 +37,8 @@ VkInstance VulkanInstance::createInstance(const std::string &applicationName) {
   ValidationLayer::fillInstanceValidationLayerDebugInfo(vkInstanceCreateInfo,
                                                         debugCreateInfo);
 
-  if (vkCreateInstance(&vkInstanceCreateInfo, nullptr, &m_vkInstance) !=
-      VK_SUCCESS) {
-    ABORT("Failed to create vulkan instance");
-  }
+  ABORT_ON_FAIL(vkCreateInstance(&vkInstanceCreateInfo, nullptr, &m_vkInstance),
+                "Failed to create vulkan instance");
 
   return m_vkInstance;
 }

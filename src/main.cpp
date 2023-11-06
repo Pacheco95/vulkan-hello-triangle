@@ -19,6 +19,7 @@ int main() {
     SPDLOG_INFO("Process id {}", getpid());
     app.run();
   } catch (const std::exception &e) {
+    std::cerr << e.what() << std::endl;
     return EXIT_FAILURE;
   }
 

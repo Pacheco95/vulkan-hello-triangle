@@ -120,10 +120,9 @@ void GraphicsPipeline::createPipeline(const SwapChain& swapChain,
   pipelineLayoutInfo.pushConstantRangeCount = 0;     // Optional
   pipelineLayoutInfo.pPushConstantRanges = nullptr;  // Optional
 
-  if (vkCreatePipelineLayout(m_device, &pipelineLayoutInfo, nullptr,
-                             &m_pipelineLayout) != VK_SUCCESS) {
-    ABORT("Failed to create pipeline layout");
-  }
+  ABORT_ON_FAIL(vkCreatePipelineLayout(m_device, &pipelineLayoutInfo, nullptr,
+                                       &m_pipelineLayout),
+                "Failed to create pipeline layout");
 
   VkGraphicsPipelineCreateInfo pipelineInfo{};
   pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -142,10 +141,10 @@ void GraphicsPipeline::createPipeline(const SwapChain& swapChain,
   pipelineInfo.subpass = 0;
   pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
-  if (vkCreateGraphicsPipelines(m_device, VK_NULL_HANDLE, 1, &pipelineInfo,
-                                nullptr, &m_graphicsPipeline) != VK_SUCCESS) {
-    ABORT("Failed to create graphics pipeline");
-  }
+  ABORT_ON_FAIL(
+      vkCreateGraphicsPipelines(m_device, VK_NULL_HANDLE, 1, &pipelineInfo,
+                                nullptr, &m_graphicsPipeline),
+      "Failed to create graphics pipeline");
 
   SPDLOG_DEBUG("Created pipeline");
 }
@@ -179,10 +178,9 @@ VkShaderModule GraphicsPipeline::createShaderModule(ByteCode ShaderByteCode,
 
   VkShaderModule shaderModule;
 
-  if (vkCreateShaderModule(m_device, &createInfo, nullptr, &shaderModule) !=
-      VK_SUCCESS) {
-    ABORT("Failed to create shader module");
-  }
+  ABORT_ON_FAIL(
+      vkCreateShaderModule(m_device, &createInfo, nullptr, &shaderModule),
+      "Failed to create shader module");
 
   return shaderModule;
 }

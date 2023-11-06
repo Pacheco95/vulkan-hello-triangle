@@ -18,11 +18,10 @@ ValidationLayer::ValidationLayer(VkInstance instance)
   }
 
   auto createInfo = getDebugMessengerCreateInfo();
-  if (createDebugUtilsMessengerEXT(m_vkInstance, &createInfo,
 
-                                   &m_debugMessenger) != VK_SUCCESS) {
-    ABORT("Failed to set up debug messenger");
-  }
+  ABORT_ON_FAIL(createDebugUtilsMessengerEXT(m_vkInstance, &createInfo,
+                                             &m_debugMessenger),
+                "Failed to set up debug messenger");
 }
 
 ValidationLayer::~ValidationLayer() {

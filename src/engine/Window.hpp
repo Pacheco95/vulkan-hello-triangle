@@ -11,6 +11,8 @@
 #include <string>
 #include <vector>
 
+#include "Config.hpp"
+
 namespace engine {
 
 class Window {
@@ -24,6 +26,8 @@ class Window {
   void pollEvents();
 
   [[nodiscard]] GLFWwindow *getHandle() const;
+
+  static std::vector<const char *> getRequiredExtensions();
 
  private:
   GLFWwindow *m_window = nullptr;

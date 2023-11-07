@@ -29,6 +29,8 @@ add_executable(VulkanHelloTriangle src/main.cpp
         src/engine/Instance.hpp
         src/engine/Window.cpp
         src/engine/Window.hpp
+        src/engine/ValidationLayer.cpp
+        src/engine/ValidationLayer.hpp
 )
 
 target_link_libraries(VulkanHelloTriangle

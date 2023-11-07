@@ -61,4 +61,19 @@ void Window::centerWindow() {
 
 GLFWwindow *Window::getHandle() const { return m_window; }
 
+std::vector<const char *> Window::getRequiredExtensions() {
+  uint32_t glfwExtensionCount = 0;
+  const char **glfwExtensions;
+  glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+
+  std::vector<const char *> extensions(glfwExtensions,
+                                       glfwExtensions + glfwExtensionCount);
+
+  if (Config::IS_VALIDATION_LAYERS_ENABLED) {
+    extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+  }
+
+  return extensions;
+}
+
 }  // namespace engine

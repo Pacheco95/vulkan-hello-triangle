@@ -30,6 +30,8 @@ class SwapChain {
 
   const std::vector<VkImageView> &getImageViews();
 
+  VkSwapchainKHR getHandle() const;
+
  private:
   VkSwapchainKHR m_swapChain;
   VkDevice m_device;

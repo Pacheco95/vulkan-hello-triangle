@@ -221,4 +221,6 @@ VkFormat SwapChain::getSwapChainImageFormat() const {
 const std::vector<VkImageView> &SwapChain::getImageViews() {
   return m_swapChainImageViews;
 }
+
+VkSwapchainKHR SwapChain::getHandle() const { return m_swapChain; }
 }  // namespace engine

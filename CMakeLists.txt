@@ -50,7 +50,11 @@ add_executable(VulkanHelloTriangle src/main.cpp
         src/engine/RenderPass.cpp
         src/engine/RenderPass.hpp
         src/engine/FrameBuffer.cpp
-        src/engine/FrameBuffer.hpp)
+        src/engine/FrameBuffer.hpp
+        src/engine/CommandPool.cpp
+        src/engine/CommandPool.hpp
+        src/engine/CommandBuffer.cpp
+        src/engine/CommandBuffer.hpp)
 
 target_link_libraries(VulkanHelloTriangle
         PRIVATE

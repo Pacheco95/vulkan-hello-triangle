@@ -37,6 +37,12 @@ Application::Application() {
   m_frameBuffers = FrameBuffer::getFromImageViews(
       m_swapChain->getImageViews(), m_renderPass->getHandle(),
       m_swapChain->getSwapChainExtent(), m_logicalDevice->getHandle());
+
+  createSyncObjects();
+
+  vkDestroySemaphore(device, imageAvailableSemaphore, nullptr);
+  vkDestroySemaphore(device, renderFinishedSemaphore, nullptr);
+  vkDestroyFence(device, inFlightFence, nullptr);
 }
 
 void Application::run() {

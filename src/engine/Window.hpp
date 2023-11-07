@@ -8,7 +8,6 @@
 
 #include <GLFW/glfw3.h>
 
-#include <cstdlib>
 #include <string>
 #include <vector>
 
@@ -23,8 +22,6 @@ class Window {
   [[nodiscard]] bool isOpen() const;
 
   void pollEvents();
-
-  static std::vector<const char *> getRequiredExtensions();
 
   [[nodiscard]] GLFWwindow *getHandle() const;
 

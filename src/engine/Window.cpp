@@ -3,7 +3,6 @@
 #include <stdexcept>
 
 #include "Abort.hpp"
-#include "ApplicationConfig.hpp"
 
 namespace engine {
 Window::Window(size_t width, size_t height, const std::string &title) {
@@ -24,11 +23,14 @@ Window::Window(size_t width, size_t height, const std::string &title) {
   }
 
   centerWindow();
+
+  SPDLOG_DEBUG("Created Window: {}", fmt::ptr(getHandle()));
 }
 
 Window::~Window() {
   if (m_window) {
     glfwDestroyWindow(m_window);
+    SPDLOG_DEBUG("Destroyed Window: {}", fmt::ptr(getHandle()));
   }
 
   glfwTerminate();
@@ -47,26 +49,13 @@ void Window::pollEvents() { glfwPollEvents(); }
 
 #pragma clang diagnostic pop
 
-std::vector<const char *> Window::getRequiredExtensions() {
-  uint32_t glfwExtensionCount = 0;
-  const char **glfwExtensions =
-      glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
-
-  std::vector<const char *> extensions(glfwExtensions,
-                                       glfwExtensions + glfwExtensionCount);
-
-  if (ApplicationConfig::IS_VALIDATION_LAYERS_ENABLED) {
-    extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-  }
-
-  return extensions;
-}
-
 void Window::centerWindow() {
   GLFWmonitor *monitor = glfwGetPrimaryMonitor();
   const GLFWvidmode *mode = glfwGetVideoMode(monitor);
-  int xPos = (mode->width - 800) / 2;
-  int yPos = (mode->height - 600) / 2;
+  int windowWidth = 0, windowHeight = 0;
+  glfwGetWindowSize(m_window, &windowWidth, &windowHeight);
+  int xPos = (mode->width - windowWidth) / 2;
+  int yPos = (mode->height - windowHeight) / 2;
   glfwSetWindowPos(m_window, xPos, yPos);
 }
 

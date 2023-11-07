@@ -1,11 +1,11 @@
-#ifndef APPLICATION_CONFIG_HPP
-#define APPLICATION_CONFIG_HPP
+#ifndef CONFIG_HPP
+#define CONFIG_HPP
 
 #include <cstdint>
 #include <vector>
 
 namespace engine {
-struct ApplicationConfig {
+struct Config {
   static const std::size_t WINDOW_WIDTH;
   static const std::size_t WINDOW_HEIGHT;
   static const char *APP_NAME;
@@ -16,4 +16,4 @@ struct ApplicationConfig {
 };
 }  // namespace engine
 
-#endif  // APPLICATION_CONFIG_HPP
+#endif  // CONFIG_HPP

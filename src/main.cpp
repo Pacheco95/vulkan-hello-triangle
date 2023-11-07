@@ -4,24 +4,26 @@
 #include <exception>
 #include <iostream>
 
-#include "Application.hpp"
+#include "Application.h"
 
-void configureLogger() {
-  auto level = static_cast<spdlog::level::level_enum>(SPDLOG_ACTIVE_LEVEL);
-  spdlog::set_level(level);
-}
+void configureLogger();
 
 int main() {
   configureLogger();
 
   try {
-    Application app{};
+    HelloTriangleApplication app{};
     SPDLOG_INFO("Process id {}", getpid());
     app.run();
   } catch (const std::exception &e) {
-    std::cerr << e.what() << std::endl;
+    SPDLOG_CRITICAL(e.what());
     return EXIT_FAILURE;
   }
 
   return EXIT_SUCCESS;
+}
+
+void configureLogger() {
+  auto level = static_cast<spdlog::level::level_enum>(SPDLOG_ACTIVE_LEVEL);
+  spdlog::set_level(level);
 }

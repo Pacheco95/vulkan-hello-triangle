@@ -48,7 +48,9 @@ add_executable(VulkanHelloTriangle src/main.cpp
         src/engine/GraphicsPipeline.cpp
         src/engine/GraphicsPipeline.hpp
         src/engine/RenderPass.cpp
-        src/engine/RenderPass.hpp)
+        src/engine/RenderPass.hpp
+        src/engine/FrameBuffer.cpp
+        src/engine/FrameBuffer.hpp)
 
 target_link_libraries(VulkanHelloTriangle
         PRIVATE

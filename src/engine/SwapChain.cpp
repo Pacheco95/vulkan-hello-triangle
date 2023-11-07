@@ -217,4 +217,8 @@ VkExtent2D SwapChain::getSwapChainExtent() const { return m_swapChainExtent; }
 VkFormat SwapChain::getSwapChainImageFormat() const {
   return m_swapChainImageFormat;
 }
+
+const std::vector<VkImageView> &SwapChain::getImageViews() {
+  return m_swapChainImageViews;
+}
 }  // namespace engine

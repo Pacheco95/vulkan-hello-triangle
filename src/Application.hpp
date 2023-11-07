@@ -2,6 +2,7 @@
 #define APPLICATION_HPP
 
 #include "ApplicationConfig.hpp"
+#include "FrameBuffer.hpp"
 #include "GraphicsPipeline.hpp"
 #include "LogicalDevice.hpp"
 #include "PhysicalDeviceSelector.hpp"
@@ -32,6 +33,7 @@ class Application {
   SwapChain *m_swapChain;
   RenderPass *m_renderPass;
   GraphicsPipeline *m_graphicsPipeline;
+  std::vector<FrameBuffer> m_frameBuffers;
 };
 
 #endif  // APPLICATION_HPP

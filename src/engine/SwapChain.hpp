@@ -28,6 +28,8 @@ class SwapChain {
 
   [[nodiscard]] VkExtent2D getSwapChainExtent() const;
 
+  const std::vector<VkImageView> &getImageViews();
+
  private:
   VkSwapchainKHR m_swapChain;
   VkDevice m_device;

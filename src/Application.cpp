@@ -33,6 +33,10 @@ Application::Application() {
   m_graphicsPipeline =
       new GraphicsPipeline(device, vertShaderByteCode, fragShaderByteCode,
                            *m_swapChain, *m_renderPass);
+
+  m_frameBuffers = FrameBuffer::getFromImageViews(
+      m_swapChain->getImageViews(), m_renderPass->getHandle(),
+      m_swapChain->getSwapChainExtent(), m_logicalDevice->getHandle());
 }
 
 void Application::run() {
@@ -42,6 +46,7 @@ void Application::run() {
 }
 
 Application::~Application() {
+  m_frameBuffers.clear();
   delete m_graphicsPipeline;
   delete m_renderPass;
   delete m_swapChain;

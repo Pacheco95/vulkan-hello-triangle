@@ -4,16 +4,9 @@
 #include <vulkan/vulkan.h>
 
 #include <optional>
-
-#include "Abort.hpp"
+#include <vector>
 
 namespace engine {
-
-struct QueueFamilyIndices {
-  std::optional<uint32_t> graphicsFamily;
-
-  [[nodiscard]] bool isComplete() const { return graphicsFamily.has_value(); }
-};
 
 class PhysicalDevice {
  public:
@@ -21,8 +14,6 @@ class PhysicalDevice {
 
   static std::vector<VkPhysicalDevice> enumeratePhysicalDevices(
       VkInstance instance);
-
-  static QueueFamilyIndices findSuitableQueueFamilies(VkPhysicalDevice device);
 
   static std::vector<VkQueueFamilyProperties> enumerateQueueFamilies(
       VkPhysicalDevice device);

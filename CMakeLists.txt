@@ -35,6 +35,10 @@ add_executable(VulkanHelloTriangle src/main.cpp
         src/engine/PhysicalDevice.hpp
         src/engine/Utils.cpp
         src/engine/Utils.hpp
+        src/engine/QueueFamily.cpp
+        src/engine/QueueFamily.hpp
+        src/engine/Device.cpp
+        src/engine/Device.hpp
 )
 
 target_link_libraries(VulkanHelloTriangle

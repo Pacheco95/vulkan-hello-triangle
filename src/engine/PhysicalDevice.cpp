@@ -1,5 +1,8 @@
 #include "PhysicalDevice.hpp"
 
+#include "Abort.hpp"
+#include "QueueFamily.hpp"
+
 namespace engine {
 VkPhysicalDevice PhysicalDevice::pick(VkInstance instance) {
   std::vector<VkPhysicalDevice> devices = enumeratePhysicalDevices(instance);
@@ -27,26 +30,6 @@ std::vector<VkPhysicalDevice> PhysicalDevice::enumeratePhysicalDevices(
   return devices;
 }
 
-QueueFamilyIndices PhysicalDevice::findSuitableQueueFamilies(
-    VkPhysicalDevice device) {
-  QueueFamilyIndices indices;
-
-  int i = 0;
-  for (const auto& queueFamily : enumerateQueueFamilies(device)) {
-    if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
-      indices.graphicsFamily = i;
-    }
-
-    if (indices.isComplete()) {
-      break;
-    }
-
-    i++;
-  }
-
-  return indices;
-}
-
 std::vector<VkQueueFamilyProperties> PhysicalDevice::enumerateQueueFamilies(
     VkPhysicalDevice device) {
   uint32_t queueFamilyCount = 0;
@@ -59,8 +42,7 @@ std::vector<VkQueueFamilyProperties> PhysicalDevice::enumerateQueueFamilies(
 }
 
 bool PhysicalDevice::isDeviceSuitable(VkPhysicalDevice device) {
-  QueueFamilyIndices indices =
-      PhysicalDevice::findSuitableQueueFamilies(device);
+  QueueFamilyIndices indices = QueueFamily::findSuitableQueueFamilies(device);
 
   return indices.isComplete();
 }

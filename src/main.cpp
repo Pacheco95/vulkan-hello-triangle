@@ -8,11 +8,11 @@
 void configureLogger();
 
 int main() {
+  SPDLOG_INFO("Process id {}", getpid());
   configureLogger();
 
   try {
-    HelloTriangleApplication app{};
-    SPDLOG_INFO("Process id {}", getpid());
+    app::Application app{};
     app.run();
   } catch (const std::exception &e) {
     SPDLOG_CRITICAL(e.what());

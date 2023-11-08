@@ -13,25 +13,16 @@
 #include "ValidationLayer.hpp"
 #include "Window.hpp"
 
+namespace app {
+using namespace engine;
+
 struct SwapChainSupportDetails {
   VkSurfaceCapabilitiesKHR capabilities{};
   std::vector<VkSurfaceFormatKHR> formats{};
   std::vector<VkPresentModeKHR> presentModes{};
 };
 
-class HelloTriangleApplication {
-  typedef engine::Window Window;
-  typedef engine::Instance Instance;
-  typedef engine::ValidationLayer ValidationLayer;
-  typedef engine::Config Config;
-  typedef engine::PhysicalDevice PhysicalDevice;
-  typedef engine::Utils Utils;
-  typedef engine::QueueFamily QueueFamily;
-  typedef engine::QueueFamilyIndices QueueFamilyIndices;
-  typedef engine::Device Device;
-  typedef engine::SwapChain SwapChain;
-  typedef engine::ImageView ImageView;
-
+class Application {
  public:
   void run() {
     initWindow();
@@ -402,3 +393,5 @@ class HelloTriangleApplication {
     }
   }
 };
+
+}  // namespace app

@@ -10,7 +10,7 @@ namespace engine {
 
 class PhysicalDevice {
  public:
-  static VkPhysicalDevice pick(VkInstance instance);
+  static VkPhysicalDevice pick(VkInstance instance, VkSurfaceKHR surface);
 
   static std::vector<VkPhysicalDevice> enumeratePhysicalDevices(
       VkInstance instance);
@@ -18,7 +18,7 @@ class PhysicalDevice {
   static std::vector<VkQueueFamilyProperties> enumerateQueueFamilies(
       VkPhysicalDevice device);
 
-  static bool isDeviceSuitable(VkPhysicalDevice device);
+  static bool isDeviceSuitable(VkPhysicalDevice device, VkSurfaceKHR surface);
 };
 
 }  // namespace engine

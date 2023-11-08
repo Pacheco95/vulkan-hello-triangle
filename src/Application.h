@@ -1,4 +1,5 @@
 #include <memory>
+#include <set>
 #include <sstream>
 
 #include "Config.hpp"
@@ -36,6 +37,8 @@ class HelloTriangleApplication {
   VkPhysicalDevice m_physicalDevice;
   std::unique_ptr<Device> m_device;
   VkQueue m_graphicsQueue;
+  VkQueue m_presentQueue;
+  VkSurfaceKHR m_surface;
 
   void initWindow() {
     m_window = std::make_unique<Window>(
@@ -45,6 +48,7 @@ class HelloTriangleApplication {
   void initVulkan() {
     createInstance();
     setupDebugMessenger();
+    createSurface();
     pickPhysicalDevice();
     createLogicalDevice();
   }
@@ -58,6 +62,7 @@ class HelloTriangleApplication {
   void cleanup() {
     m_device.reset();
     m_validationLayer.reset();
+    vkDestroySurfaceKHR(m_instance->getHandle(), m_surface, nullptr);
     m_instance.reset();
     m_window.reset();
   }
@@ -103,8 +108,15 @@ class HelloTriangleApplication {
         std::make_unique<ValidationLayer>(m_instance->getHandle());
   }
 
+  void createSurface() {
+    ABORT_ON_FAIL(
+        glfwCreateWindowSurface(m_instance->getHandle(), m_window->getHandle(),
+                                nullptr, &m_surface),
+        "Failed to create window surface");
+  }
+
   void pickPhysicalDevice() {
-    m_physicalDevice = PhysicalDevice::pick(m_instance->getHandle());
+    m_physicalDevice = PhysicalDevice::pick(m_instance->getHandle(), m_surface);
 
     VkPhysicalDeviceProperties deviceProps;
     vkGetPhysicalDeviceProperties(m_physicalDevice, &deviceProps);
@@ -114,23 +126,34 @@ class HelloTriangleApplication {
 
   void createLogicalDevice() {
     QueueFamilyIndices indices =
-        QueueFamily::findSuitableQueueFamilies(m_physicalDevice);
+        QueueFamily::findSuitableQueueFamilies(m_physicalDevice, m_surface);
 
-    VkDeviceQueueCreateInfo queueCreateInfo{};
-    queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-    queueCreateInfo.queueFamilyIndex = indices.graphicsFamily.value();
-    queueCreateInfo.queueCount = 1;
+    std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
+    std::set<uint32_t> uniqueQueueFamilies = {
+        indices.graphicsFamily.value(),
+        indices.presentFamily.value()
+    };
 
     float queuePriority = 1.0f;
-    queueCreateInfo.pQueuePriorities = &queuePriority;
+    for (uint32_t queueFamily : uniqueQueueFamilies) {
+      VkDeviceQueueCreateInfo queueCreateInfo{};
+      queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+      queueCreateInfo.queueFamilyIndex = queueFamily;
+      queueCreateInfo.queueCount = 1;
+      queueCreateInfo.pQueuePriorities = &queuePriority;
+      queueCreateInfos.emplace_back(queueCreateInfo);
+    }
 
     VkPhysicalDeviceFeatures deviceFeatures{};
 
     VkDeviceCreateInfo deviceCreateInfo{};
     deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-    deviceCreateInfo.pQueueCreateInfos = &queueCreateInfo;
-    deviceCreateInfo.queueCreateInfoCount = 1;
+
+    deviceCreateInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
+    deviceCreateInfo.pQueueCreateInfos = queueCreateInfos.data();
+
     deviceCreateInfo.pEnabledFeatures = &deviceFeatures;
+
     deviceCreateInfo.enabledExtensionCount = 0;
 
     const std::vector<const char *> &layers = Config::VALIDATION_LAYERS;
@@ -144,5 +167,6 @@ class HelloTriangleApplication {
         std::make_unique<Device>(m_physicalDevice, deviceCreateInfo, nullptr);
 
     m_graphicsQueue = m_device->getQueue(indices.graphicsFamily.value());
+    m_presentQueue = m_device->getQueue(indices.presentFamily.value());
   }
 };

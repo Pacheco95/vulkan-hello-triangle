@@ -4,11 +4,12 @@
 #include "QueueFamily.hpp"
 
 namespace engine {
-VkPhysicalDevice PhysicalDevice::pick(VkInstance instance) {
+VkPhysicalDevice PhysicalDevice::pick(VkInstance instance,
+                                      VkSurfaceKHR surface) {
   std::vector<VkPhysicalDevice> devices = enumeratePhysicalDevices(instance);
 
   for (const auto& device : devices) {
-    if (PhysicalDevice::isDeviceSuitable(device)) {
+    if (PhysicalDevice::isDeviceSuitable(device, surface)) {
       return device;
     }
   }
@@ -41,8 +42,10 @@ std::vector<VkQueueFamilyProperties> PhysicalDevice::enumerateQueueFamilies(
   return queueFamilies;
 }
 
-bool PhysicalDevice::isDeviceSuitable(VkPhysicalDevice device) {
-  QueueFamilyIndices indices = QueueFamily::findSuitableQueueFamilies(device);
+bool PhysicalDevice::isDeviceSuitable(VkPhysicalDevice device,
+                                      VkSurfaceKHR surface) {
+  QueueFamilyIndices indices =
+      QueueFamily::findSuitableQueueFamilies(device, surface);
 
   return indices.isComplete();
 }

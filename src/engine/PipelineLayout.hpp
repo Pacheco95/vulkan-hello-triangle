@@ -15,6 +15,8 @@ class PipelineLayout {
 
   virtual ~PipelineLayout();
 
+  [[nodiscard]] VkPipelineLayout getHandle() const;
+
   VkPipelineLayout m_pipelineLayout = VK_NULL_HANDLE;
   VkDevice m_device;
   const VkAllocationCallbacks* m_alloc;

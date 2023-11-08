@@ -5,6 +5,7 @@
 #include "BinaryLoader.hpp"
 #include "Config.hpp"
 #include "Device.hpp"
+#include "GraphicsPipeline.hpp"
 #include "ImageView.hpp"
 #include "Instance.hpp"
 #include "PhysicalDevice.hpp"
@@ -55,6 +56,7 @@ class Application {
 
   std::unique_ptr<RenderPass> m_renderPass;
   std::unique_ptr<PipelineLayout> m_pipelineLayout;
+  std::unique_ptr<GraphicsPipeline> m_graphicsPipeline;
 
   void initWindow() {
     m_window = std::make_unique<Window>(
@@ -80,6 +82,7 @@ class Application {
   }
 
   void cleanup() {
+    m_graphicsPipeline.reset();
     m_pipelineLayout.reset();
     m_renderPass.reset();
     swapChainImageViews.clear();
@@ -536,6 +539,25 @@ class Application {
 
     m_pipelineLayout = std::make_unique<PipelineLayout>(
         m_device->getHandle(), pipelineLayoutInfo, nullptr);
+
+    VkGraphicsPipelineCreateInfo pipelineInfo{};
+    pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+    pipelineInfo.stageCount = 2;
+    pipelineInfo.pStages = shaderStages;
+    pipelineInfo.pVertexInputState = &vertexInputInfo;
+    pipelineInfo.pInputAssemblyState = &inputAssembly;
+    pipelineInfo.pViewportState = &viewportState;
+    pipelineInfo.pRasterizationState = &rasterizer;
+    pipelineInfo.pMultisampleState = &multisampling;
+    pipelineInfo.pColorBlendState = &colorBlending;
+    pipelineInfo.pDynamicState = &dynamicState;
+    pipelineInfo.layout = m_pipelineLayout->getHandle();
+    pipelineInfo.renderPass = m_renderPass->getHandle();
+    pipelineInfo.subpass = 0;
+    pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
+
+    m_graphicsPipeline = std::make_unique<GraphicsPipeline>(
+        m_device->getHandle(), pipelineInfo, nullptr);
   }
 };
 

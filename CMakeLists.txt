@@ -33,6 +33,8 @@ add_executable(VulkanHelloTriangle src/main.cpp
         src/engine/ValidationLayer.hpp
         src/engine/PhysicalDevice.cpp
         src/engine/PhysicalDevice.hpp
+        src/engine/Utils.cpp
+        src/engine/Utils.hpp
 )
 
 target_link_libraries(VulkanHelloTriangle

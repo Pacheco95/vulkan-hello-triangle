@@ -6,6 +6,7 @@
 #include "PhysicalDevice.hpp"
 #include "ValidationLayer.hpp"
 #include "Window.hpp"
+#include "Utils.hpp"
 
 class HelloTriangleApplication {
   typedef engine::Window Window;
@@ -13,6 +14,7 @@ class HelloTriangleApplication {
   typedef engine::ValidationLayer ValidationLayer;
   typedef engine::Config Config;
   typedef engine::PhysicalDevice PhysicalDevice;
+  typedef engine::Utils Utils;
 
  public:
   void run() {
@@ -98,28 +100,6 @@ class HelloTriangleApplication {
     VkPhysicalDeviceProperties deviceProps;
     vkGetPhysicalDeviceProperties(m_physicalDevice, &deviceProps);
 
-    HelloTriangleApplication::printDeviceInfo(deviceProps);
-  }
-
-  static void printDeviceInfo(const VkPhysicalDeviceProperties &deviceProps) {
-    const char msg[] =
-        R"(Picked device:
-           Name: {}
-           API version: v{}
-           Driver version: v{})";
-
-    SPDLOG_DEBUG(msg, deviceProps.deviceName,
-                 versionNumberToString(deviceProps.apiVersion),
-                 versionNumberToString(deviceProps.driverVersion));
-  }
-
-  static std::string versionNumberToString(uint32_t versionNumber) {
-    std::stringstream versionString;
-
-    versionString << VK_VERSION_MAJOR(versionNumber) << "."
-                  << VK_VERSION_MINOR(versionNumber) << "."
-                  << VK_VERSION_PATCH(versionNumber);
-
-    return versionString.str();
+    Utils::printDeviceInfo(deviceProps);
   }
 };

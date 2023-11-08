@@ -7,14 +7,15 @@
 #include "Instance.hpp"
 #include "PhysicalDevice.hpp"
 #include "QueueFamily.hpp"
+#include "SwapChain.hpp"
 #include "Utils.hpp"
 #include "ValidationLayer.hpp"
 #include "Window.hpp"
 
 struct SwapChainSupportDetails {
-  VkSurfaceCapabilitiesKHR capabilities {};
-  std::vector<VkSurfaceFormatKHR> formats {};
-  std::vector<VkPresentModeKHR> presentModes {};
+  VkSurfaceCapabilitiesKHR capabilities{};
+  std::vector<VkSurfaceFormatKHR> formats{};
+  std::vector<VkPresentModeKHR> presentModes{};
 };
 
 class HelloTriangleApplication {
@@ -27,6 +28,7 @@ class HelloTriangleApplication {
   typedef engine::QueueFamily QueueFamily;
   typedef engine::QueueFamilyIndices QueueFamilyIndices;
   typedef engine::Device Device;
+  typedef engine::SwapChain SwapChain;
 
  public:
   void run() {
@@ -45,7 +47,7 @@ class HelloTriangleApplication {
   VkQueue m_graphicsQueue;
   VkQueue m_presentQueue;
 
-  VkSwapchainKHR swapChain;
+  std::unique_ptr<SwapChain> m_swapChain;
   std::vector<VkImage> swapChainImages;
   VkFormat swapChainImageFormat;
   VkExtent2D swapChainExtent;
@@ -73,7 +75,7 @@ class HelloTriangleApplication {
   }
 
   void cleanup() {
-    vkDestroySwapchainKHR(m_device->getHandler(), swapChain, nullptr);
+    m_swapChain.reset();
     m_device.reset();
     m_validationLayer.reset();
     vkDestroySurfaceKHR(m_instance->getHandle(), m_surface, nullptr);
@@ -242,7 +244,7 @@ class HelloTriangleApplication {
   }
 
   static SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device,
-                                                VkSurfaceKHR surface) {
+                                                       VkSurfaceKHR surface) {
     SwapChainSupportDetails details;
 
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface,
@@ -309,14 +311,18 @@ class HelloTriangleApplication {
   }
 
   void createSwapChain() {
-    SwapChainSupportDetails swapChainSupport = querySwapChainSupport(m_physicalDevice, m_surface);
+    SwapChainSupportDetails swapChainSupport =
+        querySwapChainSupport(m_physicalDevice, m_surface);
 
-    VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
-    VkPresentModeKHR presentMode = chooseSwapPresentMode(swapChainSupport.presentModes);
+    VkSurfaceFormatKHR surfaceFormat =
+        chooseSwapSurfaceFormat(swapChainSupport.formats);
+    VkPresentModeKHR presentMode =
+        chooseSwapPresentMode(swapChainSupport.presentModes);
     VkExtent2D extent = chooseSwapExtent(swapChainSupport.capabilities);
 
     uint32_t imageCount = swapChainSupport.capabilities.minImageCount + 1;
-    if (swapChainSupport.capabilities.maxImageCount > 0 && imageCount > swapChainSupport.capabilities.maxImageCount) {
+    if (swapChainSupport.capabilities.maxImageCount > 0 &&
+        imageCount > swapChainSupport.capabilities.maxImageCount) {
       imageCount = swapChainSupport.capabilities.maxImageCount;
     }
 
@@ -331,8 +337,10 @@ class HelloTriangleApplication {
     createInfo.imageArrayLayers = 1;
     createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-    QueueFamilyIndices indices = QueueFamily ::findSuitableQueueFamilies(m_physicalDevice, m_surface);
-    uint32_t queueFamilyIndices[] = {indices.graphicsFamily.value(), indices.presentFamily.value()};
+    QueueFamilyIndices indices =
+        QueueFamily ::findSuitableQueueFamilies(m_physicalDevice, m_surface);
+    uint32_t queueFamilyIndices[] = {indices.graphicsFamily.value(),
+                                     indices.presentFamily.value()};
 
     if (indices.graphicsFamily != indices.presentFamily) {
       createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
@@ -349,14 +357,16 @@ class HelloTriangleApplication {
 
     createInfo.oldSwapchain = VK_NULL_HANDLE;
 
-    if (vkCreateSwapchainKHR(m_device->getHandler(), &createInfo, nullptr, &swapChain) != VK_SUCCESS) {
-      throw std::runtime_error("failed to create swap chain!");
-    }
+    m_swapChain = std::make_unique<SwapChain>(m_device->getHandler(),
+                                              createInfo, nullptr);
 
-    vkGetSwapchainImagesKHR(m_device->getHandler(), swapChain, &imageCount, nullptr);
+    vkGetSwapchainImagesKHR(m_device->getHandler(), m_swapChain->getHandle(),
+                            &imageCount, nullptr);
     swapChainImages.resize(imageCount);
-    vkGetSwapchainImagesKHR(m_device->getHandler(), swapChain, &imageCount, swapChainImages.data());
+    vkGetSwapchainImagesKHR(m_device->getHandler(), m_swapChain->getHandle(),
+                            &imageCount, swapChainImages.data());
 
     swapChainImageFormat = surfaceFormat.format;
     swapChainExtent = extent;
-  }};
+  }
+};

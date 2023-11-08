@@ -18,6 +18,7 @@ class Instance {
 
  private:
   VkInstance m_instance = nullptr;
+  const VkAllocationCallbacks* m_alloc;
 };
 
 }  // namespace engine

@@ -2,7 +2,8 @@
 
 namespace engine {
 Instance::Instance(const VkInstanceCreateInfo& createInfo,
-                   const VkAllocationCallbacks* alloc) {
+                   const VkAllocationCallbacks* alloc)
+    : m_alloc(alloc) {
   ABORT_ON_FAIL(vkCreateInstance(&createInfo, alloc, &m_instance),
                 "Failed to create {}", typeid(Instance).name());
 
@@ -10,7 +11,7 @@ Instance::Instance(const VkInstanceCreateInfo& createInfo,
 }
 
 Instance::~Instance() {
-  vkDestroyInstance(m_instance, nullptr);
+  vkDestroyInstance(m_instance, m_alloc);
   SPDLOG_DEBUG("Destroyed Instance: {}", fmt::ptr(m_instance));
 }
 

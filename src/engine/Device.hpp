@@ -19,6 +19,7 @@ class Device {
 
  private:
   VkDevice m_device = VK_NULL_HANDLE;
+  const VkAllocationCallbacks* m_alloc;
 };
 
 }  // namespace engine

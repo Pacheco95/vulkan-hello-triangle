@@ -5,7 +5,8 @@
 namespace engine {
 Device::Device(VkPhysicalDevice physicalDevice,
                const VkDeviceCreateInfo &createInfo,
-               const VkAllocationCallbacks *allocator) {
+               const VkAllocationCallbacks *allocator)
+    : m_alloc(allocator) {
   ABORT_ON_FAIL(
       vkCreateDevice(physicalDevice, &createInfo, allocator, &m_device),
       "Failed to create logical m_device");
@@ -14,7 +15,7 @@ Device::Device(VkPhysicalDevice physicalDevice,
 }
 
 Device::~Device() {
-  vkDestroyDevice(m_device, nullptr);
+  vkDestroyDevice(m_device, m_alloc);
   SPDLOG_DEBUG("Destroyed Device: {}", fmt::ptr(m_device));
 }
 

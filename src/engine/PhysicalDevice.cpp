@@ -1,21 +1,8 @@
 #include "PhysicalDevice.hpp"
 
 #include "Abort.hpp"
-#include "QueueFamily.hpp"
 
 namespace engine {
-VkPhysicalDevice PhysicalDevice::pick(VkInstance instance,
-                                      VkSurfaceKHR surface) {
-  std::vector<VkPhysicalDevice> devices = enumeratePhysicalDevices(instance);
-
-  for (const auto& device : devices) {
-    if (PhysicalDevice::isDeviceSuitable(device, surface)) {
-      return device;
-    }
-  }
-
-  ABORT("Failed to find a suitable GPU");
-}
 
 std::vector<VkPhysicalDevice> PhysicalDevice::enumeratePhysicalDevices(
     VkInstance instance) {
@@ -42,11 +29,4 @@ std::vector<VkQueueFamilyProperties> PhysicalDevice::enumerateQueueFamilies(
   return queueFamilies;
 }
 
-bool PhysicalDevice::isDeviceSuitable(VkPhysicalDevice device,
-                                      VkSurfaceKHR surface) {
-  QueueFamilyIndices indices =
-      QueueFamily::findSuitableQueueFamilies(device, surface);
-
-  return indices.isComplete();
-}
 }  // namespace engine

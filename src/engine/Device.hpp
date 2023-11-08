@@ -12,6 +12,8 @@ class Device {
 
   virtual ~Device();
 
+  [[nodiscard]] VkDevice getHandler() const;
+
   [[nodiscard]] VkQueue getQueue(uint32_t familyIndex,
                                  uint32_t queueIndex = 0) const;
 

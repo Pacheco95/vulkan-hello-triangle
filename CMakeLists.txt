@@ -2,10 +2,10 @@ cmake_minimum_required(VERSION 3.26)
 project(VulkanHelloTriangle)
 
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2")
 
 if (CMAKE_BUILD_TYPE STREQUAL "Release")
   add_compile_definitions(SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_WARN)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2")
 else ()
   add_compile_definitions(SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_TRACE)
 endif ()
@@ -53,6 +53,8 @@ add_executable(VulkanHelloTriangle src/main.cpp
         src/engine/RenderPass.hpp
         src/engine/GraphicsPipeline.cpp
         src/engine/GraphicsPipeline.hpp
+        src/engine/FrameBuffer.cpp
+        src/engine/FrameBuffer.hpp
 )
 
 target_link_libraries(VulkanHelloTriangle

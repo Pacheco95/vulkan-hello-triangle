@@ -5,6 +5,7 @@
 #include "BinaryLoader.hpp"
 #include "Config.hpp"
 #include "Device.hpp"
+#include "FrameBuffer.hpp"
 #include "GraphicsPipeline.hpp"
 #include "ImageView.hpp"
 #include "Instance.hpp"
@@ -47,7 +48,7 @@ class Application {
 
   std::unique_ptr<SwapChain> m_swapChain;
   std::vector<VkImage> swapChainImages;
-  std::vector<std::shared_ptr<ImageView>> swapChainImageViews;
+  std::vector<ImageView> swapChainImageViews;
 
   VkFormat swapChainImageFormat;
   VkExtent2D swapChainExtent;
@@ -57,6 +58,8 @@ class Application {
   std::unique_ptr<RenderPass> m_renderPass;
   std::unique_ptr<PipelineLayout> m_pipelineLayout;
   std::unique_ptr<GraphicsPipeline> m_graphicsPipeline;
+
+  std::vector<FrameBuffer> m_swapChainFrameBuffers;
 
   void initWindow() {
     m_window = std::make_unique<Window>(
@@ -73,6 +76,7 @@ class Application {
     createImageViews();
     createRenderPass();
     createGraphicsPipeline();
+    createFrameBuffers();
   }
 
   void mainLoop() {
@@ -82,6 +86,7 @@ class Application {
   }
 
   void cleanup() {
+    m_swapChainFrameBuffers.clear();
     m_graphicsPipeline.reset();
     m_pipelineLayout.reset();
     m_renderPass.reset();
@@ -384,7 +389,7 @@ class Application {
   }
 
   void createImageViews() {
-    swapChainImageViews.resize(swapChainImages.size());
+    swapChainImageViews.reserve(swapChainImages.size());
 
     for (auto& swapChainImage : swapChainImages) {
       VkImageViewCreateInfo createInfo{};
@@ -402,8 +407,7 @@ class Application {
       createInfo.subresourceRange.baseArrayLayer = 0;
       createInfo.subresourceRange.layerCount = 1;
 
-      swapChainImageViews.emplace_back(std::make_shared<ImageView>(
-          m_device->getHandle(), createInfo, nullptr));
+      swapChainImageViews.emplace_back(m_device->getHandle(), createInfo);
     }
   }
 
@@ -558,6 +562,26 @@ class Application {
 
     m_graphicsPipeline = std::make_unique<GraphicsPipeline>(
         m_device->getHandle(), pipelineInfo, nullptr);
+  }
+
+  void createFrameBuffers() {
+    m_swapChainFrameBuffers.reserve(swapChainImageViews.size());
+
+    for (const auto& imageView : swapChainImageViews) {
+      VkImageView attachments[] = {imageView.getHandle()};
+
+      VkFramebufferCreateInfo framebufferInfo{};
+      framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+      framebufferInfo.renderPass = m_renderPass->getHandle();
+      framebufferInfo.attachmentCount = 1;
+      framebufferInfo.pAttachments = attachments;
+      framebufferInfo.width = swapChainExtent.width;
+      framebufferInfo.height = swapChainExtent.height;
+      framebufferInfo.layers = 1;
+
+      m_swapChainFrameBuffers.emplace_back(m_device->getHandle(),
+                                           framebufferInfo);
+    }
   }
 };
 

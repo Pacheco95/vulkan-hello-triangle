@@ -43,6 +43,12 @@ add_executable(VulkanHelloTriangle src/main.cpp
         src/engine/SwapChain.hpp
         src/engine/ImageView.cpp
         src/engine/ImageView.hpp
+        src/engine/BinaryLoader.cpp
+        src/engine/BinaryLoader.hpp
+        src/engine/ShaderModule.cpp
+        src/engine/ShaderModule.hpp
+        src/engine/PipelineLayout.cpp
+        src/engine/PipelineLayout.hpp
 )
 
 target_link_libraries(VulkanHelloTriangle

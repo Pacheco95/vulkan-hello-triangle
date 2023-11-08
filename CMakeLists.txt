@@ -41,6 +41,8 @@ add_executable(VulkanHelloTriangle src/main.cpp
         src/engine/Device.hpp
         src/engine/SwapChain.cpp
         src/engine/SwapChain.hpp
+        src/engine/ImageView.cpp
+        src/engine/ImageView.hpp
 )
 
 target_link_libraries(VulkanHelloTriangle

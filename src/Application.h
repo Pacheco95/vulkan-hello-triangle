@@ -4,6 +4,7 @@
 
 #include "Config.hpp"
 #include "Device.hpp"
+#include "ImageView.hpp"
 #include "Instance.hpp"
 #include "PhysicalDevice.hpp"
 #include "QueueFamily.hpp"
@@ -29,6 +30,7 @@ class HelloTriangleApplication {
   typedef engine::QueueFamilyIndices QueueFamilyIndices;
   typedef engine::Device Device;
   typedef engine::SwapChain SwapChain;
+  typedef engine::ImageView ImageView;
 
  public:
   void run() {
@@ -49,6 +51,8 @@ class HelloTriangleApplication {
 
   std::unique_ptr<SwapChain> m_swapChain;
   std::vector<VkImage> swapChainImages;
+  std::vector<std::shared_ptr<ImageView>> swapChainImageViews;
+
   VkFormat swapChainImageFormat;
   VkExtent2D swapChainExtent;
 
@@ -66,6 +70,7 @@ class HelloTriangleApplication {
     pickPhysicalDevice();
     createLogicalDevice();
     createSwapChain();
+    createImageViews();
   }
 
   void mainLoop() {
@@ -75,6 +80,7 @@ class HelloTriangleApplication {
   }
 
   void cleanup() {
+    swapChainImageViews.clear();
     m_swapChain.reset();
     m_device.reset();
     m_validationLayer.reset();
@@ -357,16 +363,42 @@ class HelloTriangleApplication {
 
     createInfo.oldSwapchain = VK_NULL_HANDLE;
 
-    m_swapChain = std::make_unique<SwapChain>(m_device->getHandler(),
-                                              createInfo, nullptr);
+    m_swapChain =
+        std::make_unique<SwapChain>(m_device->getHandle(), createInfo, nullptr);
 
-    vkGetSwapchainImagesKHR(m_device->getHandler(), m_swapChain->getHandle(),
+    vkGetSwapchainImagesKHR(m_device->getHandle(), m_swapChain->getHandle(),
                             &imageCount, nullptr);
     swapChainImages.resize(imageCount);
-    vkGetSwapchainImagesKHR(m_device->getHandler(), m_swapChain->getHandle(),
+    vkGetSwapchainImagesKHR(m_device->getHandle(), m_swapChain->getHandle(),
                             &imageCount, swapChainImages.data());
+
+    SPDLOG_DEBUG("Got {} swap chain images", swapChainImages.size());
 
     swapChainImageFormat = surfaceFormat.format;
     swapChainExtent = extent;
+  }
+
+  void createImageViews() {
+    swapChainImageViews.resize(swapChainImages.size());
+
+    for (auto& swapChainImage : swapChainImages) {
+      VkImageViewCreateInfo createInfo{};
+      createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+      createInfo.image = swapChainImage;
+      createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+      createInfo.format = swapChainImageFormat;
+      createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+      createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+      createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+      createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+      createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+      createInfo.subresourceRange.baseMipLevel = 0;
+      createInfo.subresourceRange.levelCount = 1;
+      createInfo.subresourceRange.baseArrayLayer = 0;
+      createInfo.subresourceRange.layerCount = 1;
+
+      swapChainImageViews.emplace_back(std::make_shared<ImageView>(
+          m_device->getHandle(), createInfo, nullptr));
+    }
   }
 };

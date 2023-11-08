@@ -49,6 +49,8 @@ add_executable(VulkanHelloTriangle src/main.cpp
         src/engine/ShaderModule.hpp
         src/engine/PipelineLayout.cpp
         src/engine/PipelineLayout.hpp
+        src/engine/RenderPass.cpp
+        src/engine/RenderPass.hpp
 )
 
 target_link_libraries(VulkanHelloTriangle

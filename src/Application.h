@@ -1,7 +1,9 @@
 #include <memory>
+#include <sstream>
 
 #include "Config.hpp"
 #include "Instance.hpp"
+#include "PhysicalDevice.hpp"
 #include "ValidationLayer.hpp"
 #include "Window.hpp"
 
@@ -10,6 +12,7 @@ class HelloTriangleApplication {
   typedef engine::Instance Instance;
   typedef engine::ValidationLayer ValidationLayer;
   typedef engine::Config Config;
+  typedef engine::PhysicalDevice PhysicalDevice;
 
  public:
   void run() {
@@ -23,6 +26,7 @@ class HelloTriangleApplication {
   std::shared_ptr<Window> m_window;
   std::shared_ptr<Instance> m_instance;
   std::shared_ptr<ValidationLayer> m_validationLayer;
+  VkPhysicalDevice m_physicalDevice;
 
   void initWindow() {
     m_window = std::make_shared<Window>(
@@ -32,6 +36,7 @@ class HelloTriangleApplication {
   void initVulkan() {
     createInstance();
     setupDebugMessenger();
+    pickPhysicalDevice();
   }
 
   void mainLoop() {
@@ -85,5 +90,36 @@ class HelloTriangleApplication {
   void setupDebugMessenger() {
     m_validationLayer =
         std::make_shared<ValidationLayer>(m_instance->getHandle());
+  }
+
+  void pickPhysicalDevice() {
+    m_physicalDevice = PhysicalDevice::pick(m_instance->getHandle());
+
+    VkPhysicalDeviceProperties deviceProps;
+    vkGetPhysicalDeviceProperties(m_physicalDevice, &deviceProps);
+
+    HelloTriangleApplication::printDeviceInfo(deviceProps);
+  }
+
+  static void printDeviceInfo(const VkPhysicalDeviceProperties &deviceProps) {
+    const char msg[] =
+        R"(Picked device:
+           Name: {}
+           API version: v{}
+           Driver version: v{})";
+
+    SPDLOG_DEBUG(msg, deviceProps.deviceName,
+                 versionNumberToString(deviceProps.apiVersion),
+                 versionNumberToString(deviceProps.driverVersion));
+  }
+
+  static std::string versionNumberToString(uint32_t versionNumber) {
+    std::stringstream versionString;
+
+    versionString << VK_VERSION_MAJOR(versionNumber) << "."
+                  << VK_VERSION_MINOR(versionNumber) << "."
+                  << VK_VERSION_PATCH(versionNumber);
+
+    return versionString.str();
   }
 };

@@ -60,6 +60,8 @@ class Application {
   std::unique_ptr<GraphicsPipeline> m_graphicsPipeline;
 
   std::vector<FrameBuffer> m_swapChainFrameBuffers;
+  VkCommandPool commandPool;
+  VkCommandBuffer commandBuffer;
 
   void initWindow() {
     m_window = std::make_unique<Window>(
@@ -77,6 +79,8 @@ class Application {
     createRenderPass();
     createGraphicsPipeline();
     createFrameBuffers();
+    createCommandPool();
+    createCommandBuffer();
   }
 
   void mainLoop() {
@@ -86,6 +90,7 @@ class Application {
   }
 
   void cleanup() {
+    vkDestroyCommandPool(m_device->getHandle(), commandPool, nullptr);
     m_swapChainFrameBuffers.clear();
     m_graphicsPipeline.reset();
     m_pipelineLayout.reset();
@@ -581,6 +586,79 @@ class Application {
 
       m_swapChainFrameBuffers.emplace_back(m_device->getHandle(),
                                            framebufferInfo);
+    }
+  }
+
+  void createCommandPool() {
+    QueueFamilyIndices queueFamilyIndices =
+        QueueFamily::findSuitableQueueFamilies(m_physicalDevice, m_surface);
+
+    VkCommandPoolCreateInfo poolInfo{};
+    poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+    poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+    poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
+
+    if (vkCreateCommandPool(m_device->getHandle(), &poolInfo, nullptr,
+                            &commandPool) != VK_SUCCESS) {
+      throw std::runtime_error("failed to create command pool!");
+    }
+  }
+
+  void createCommandBuffer() {
+    VkCommandBufferAllocateInfo allocInfo{};
+    allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    allocInfo.commandPool = commandPool;
+    allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    allocInfo.commandBufferCount = 1;
+
+    if (vkAllocateCommandBuffers(m_device->getHandle(), &allocInfo, &commandBuffer) != VK_SUCCESS) {
+      throw std::runtime_error("failed to allocate command buffers!");
+    }
+  }
+
+  void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex) {
+    VkCommandBufferBeginInfo beginInfo{};
+    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+
+    if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS) {
+      throw std::runtime_error("failed to begin recording command buffer!");
+    }
+
+    VkRenderPassBeginInfo renderPassInfo{};
+    renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    renderPassInfo.renderPass = m_renderPass->getHandle();
+    renderPassInfo.framebuffer = m_swapChainFrameBuffers[imageIndex].getHandle();
+    renderPassInfo.renderArea.offset = {0, 0};
+    renderPassInfo.renderArea.extent = swapChainExtent;
+
+    VkClearValue clearColor = {{{0.0f, 0.0f, 0.0f, 1.0f}}};
+    renderPassInfo.clearValueCount = 1;
+    renderPassInfo.pClearValues = &clearColor;
+
+    vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline->getHandle());
+
+    VkViewport viewport{};
+    viewport.x = 0.0f;
+    viewport.y = 0.0f;
+    viewport.width = (float) swapChainExtent.width;
+    viewport.height = (float) swapChainExtent.height;
+    viewport.minDepth = 0.0f;
+    viewport.maxDepth = 1.0f;
+    vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+
+    VkRect2D scissor{};
+    scissor.offset = {0, 0};
+    scissor.extent = swapChainExtent;
+    vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+
+    vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+
+    vkCmdEndRenderPass(commandBuffer);
+
+    if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
+      throw std::runtime_error("failed to record command buffer!");
     }
   }
 };

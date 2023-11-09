@@ -19,7 +19,8 @@ struct QueueFamilyIndices {
 class QueueFamily {
  public:
   static engine::QueueFamilyIndices findSuitableQueueFamilies(
-      VkPhysicalDevice device, VkSurfaceKHR surface);
+      VkPhysicalDevice device, VkSurfaceKHR surface
+  );
 };
 }  // namespace engine
 

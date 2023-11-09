@@ -7,13 +7,16 @@ namespace engine {
 
 class Device {
  public:
-  Device(VkPhysicalDevice physicalDevice, const VkDeviceCreateInfo& createInfo,
-         const VkAllocationCallbacks* allocator = nullptr);
+  Device(
+      VkPhysicalDevice physicalDevice,
+      const VkDeviceCreateInfo& createInfo,
+      const VkAllocationCallbacks* allocator = nullptr
+  );
 
   virtual ~Device();
 
-  [[nodiscard]] VkQueue getQueue(uint32_t familyIndex,
-                                 uint32_t queueIndex = 0) const;
+  [[nodiscard]] VkQueue getQueue(uint32_t familyIndex, uint32_t queueIndex = 0)
+      const;
 
   operator VkDevice() { return m_device; }
 

@@ -15,8 +15,13 @@ Window::Window(size_t width, size_t height, const std::string &title) {
   glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
   glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
-  m_window = glfwCreateWindow(static_cast<int>(width), static_cast<int>(height),
-                              title.c_str(), nullptr, nullptr);
+  m_window = glfwCreateWindow(
+      static_cast<int>(width),
+      static_cast<int>(height),
+      title.c_str(),
+      nullptr,
+      nullptr
+  );
 
   if (!m_window) {
     ABORT(initErrorMessage);
@@ -64,8 +69,9 @@ std::vector<const char *> Window::getRequiredExtensions() {
   const char **glfwExtensions;
   glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 
-  std::vector<const char *> extensions(glfwExtensions,
-                                       glfwExtensions + glfwExtensionCount);
+  std::vector<const char *> extensions(
+      glfwExtensions, glfwExtensions + glfwExtensionCount
+  );
 
   if (Config::IS_VALIDATION_LAYERS_ENABLED) {
     extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);

@@ -5,7 +5,8 @@
 namespace engine {
 
 std::vector<VkPhysicalDevice> PhysicalDevice::enumeratePhysicalDevices(
-    VkInstance instance) {
+    VkInstance instance
+) {
   uint32_t deviceCount = 0;
   vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
 
@@ -19,13 +20,15 @@ std::vector<VkPhysicalDevice> PhysicalDevice::enumeratePhysicalDevices(
 }
 
 std::vector<VkQueueFamilyProperties> PhysicalDevice::enumerateQueueFamilies(
-    VkPhysicalDevice device) {
+    VkPhysicalDevice device
+) {
   uint32_t queueFamilyCount = 0;
   vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
 
   std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
-  vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount,
-                                           queueFamilies.data());
+  vkGetPhysicalDeviceQueueFamilyProperties(
+      device, &queueFamilyCount, queueFamilies.data()
+  );
   return queueFamilies;
 }
 

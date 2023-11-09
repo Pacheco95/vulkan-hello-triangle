@@ -10,10 +10,12 @@ namespace engine {
 class PhysicalDevice {
  public:
   static std::vector<VkPhysicalDevice> enumeratePhysicalDevices(
-      VkInstance instance);
+      VkInstance instance
+  );
 
   static std::vector<VkQueueFamilyProperties> enumerateQueueFamilies(
-      VkPhysicalDevice device);
+      VkPhysicalDevice device
+  );
 };
 
 }  // namespace engine

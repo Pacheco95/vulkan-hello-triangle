@@ -9,8 +9,10 @@ namespace engine {
 
 class Instance {
  public:
-  explicit Instance(const VkInstanceCreateInfo& createInfo,
-                    const VkAllocationCallbacks* alloc = nullptr);
+  explicit Instance(
+      const VkInstanceCreateInfo& createInfo,
+      const VkAllocationCallbacks* alloc = nullptr
+  );
 
   virtual ~Instance();
 

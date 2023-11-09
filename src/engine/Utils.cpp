@@ -22,8 +22,11 @@ void Utils::printDeviceInfo(const VkPhysicalDeviceProperties& deviceProps) {
            API version: v{}
            Driver version: v{})";
 
-  SPDLOG_DEBUG(msg, deviceProps.deviceName,
-               versionNumberToString(deviceProps.apiVersion),
-               versionNumberToString(deviceProps.driverVersion));
+  SPDLOG_DEBUG(
+      msg,
+      deviceProps.deviceName,
+      versionNumberToString(deviceProps.apiVersion),
+      versionNumberToString(deviceProps.driverVersion)
+  );
 }
 }  // namespace engine

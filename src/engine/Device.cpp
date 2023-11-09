@@ -3,13 +3,16 @@
 #include "Abort.hpp"
 
 namespace engine {
-Device::Device(VkPhysicalDevice physicalDevice,
-               const VkDeviceCreateInfo &createInfo,
-               const VkAllocationCallbacks *allocator)
+Device::Device(
+    VkPhysicalDevice physicalDevice,
+    const VkDeviceCreateInfo &createInfo,
+    const VkAllocationCallbacks *allocator
+)
     : m_alloc(allocator) {
   ABORT_ON_FAIL(
       vkCreateDevice(physicalDevice, &createInfo, allocator, &m_device),
-      "Failed to create logical m_device");
+      "Failed to create logical m_device"
+  );
 
   SPDLOG_DEBUG("Created Device: {}", fmt::ptr(m_device));
 }

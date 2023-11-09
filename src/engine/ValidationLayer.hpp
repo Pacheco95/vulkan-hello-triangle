@@ -14,7 +14,8 @@ class ValidationLayer {
   static bool checkValidationLayerSupport();
 
   static void populateDebugMessengerCreateInfo(
-      VkDebugUtilsMessengerCreateInfoEXT& createInfo);
+      VkDebugUtilsMessengerCreateInfoEXT& createInfo
+  );
 
  private:
   VkInstance m_instance = VK_NULL_HANDLE;

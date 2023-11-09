@@ -1,11 +1,15 @@
 #include "Instance.hpp"
 
 namespace engine {
-Instance::Instance(const VkInstanceCreateInfo& createInfo,
-                   const VkAllocationCallbacks* alloc)
+Instance::Instance(
+    const VkInstanceCreateInfo& createInfo, const VkAllocationCallbacks* alloc
+)
     : m_alloc(alloc) {
-  ABORT_ON_FAIL(vkCreateInstance(&createInfo, alloc, &m_instance),
-                "Failed to create {}", typeid(Instance).name());
+  ABORT_ON_FAIL(
+      vkCreateInstance(&createInfo, alloc, &m_instance),
+      "Failed to create {}",
+      typeid(Instance).name()
+  );
 
   SPDLOG_DEBUG("Created Instance: {}", fmt::ptr(m_instance));
 }

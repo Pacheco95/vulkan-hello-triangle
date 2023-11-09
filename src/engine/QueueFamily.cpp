@@ -3,7 +3,8 @@
 #include "PhysicalDevice.hpp"
 
 engine::QueueFamilyIndices engine::QueueFamily::findSuitableQueueFamilies(
-    VkPhysicalDevice device, VkSurfaceKHR surface) {
+    VkPhysicalDevice device, VkSurfaceKHR surface
+) {
   QueueFamilyIndices indices;
 
   int i = 0;

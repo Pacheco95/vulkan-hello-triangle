@@ -6,19 +6,30 @@
 #include <Abort.hpp>
 #include <regex>
 
-template <typename T, typename CreateInfo,
-          VKAPI_ATTR VkResult VKAPI_CALL (*VkCreate)(
-              VkDevice device, const CreateInfo* pCreateInfo,
-              const VkAllocationCallbacks* pAllocator, T* dest),
-          VKAPI_ATTR void VKAPI_CALL (*VkDestroy)(
-              VkDevice device, T src, const VkAllocationCallbacks* pAllocator)>
+template <
+    typename T,
+    typename CreateInfo,
+    VKAPI_ATTR VkResult VKAPI_CALL (*VkCreate
+    )(VkDevice device,
+      const CreateInfo* pCreateInfo,
+      const VkAllocationCallbacks* pAllocator,
+      T* dest),
+    VKAPI_ATTR void VKAPI_CALL (*VkDestroy
+    )(VkDevice device, T src, const VkAllocationCallbacks* pAllocator)>
 class VkWrapper {
  public:
-  explicit VkWrapper(VkDevice device, const CreateInfo& createInfo,
-                     const VkAllocationCallbacks* allocator = nullptr)
-      : m_device(device), m_allocator(allocator) {
-    ABORT_ON_FAIL(VkCreate(m_device, &createInfo, allocator, &m_handle),
-                  "Failed to create {}", typeid(T).name());
+  explicit VkWrapper(
+      VkDevice device,
+      const CreateInfo& createInfo,
+      const VkAllocationCallbacks* allocator = nullptr
+  )
+      : m_device(device),
+        m_allocator(allocator) {
+    ABORT_ON_FAIL(
+        VkCreate(m_device, &createInfo, allocator, &m_handle),
+        "Failed to create {}",
+        typeid(T).name()
+    );
 
     SPDLOG_DEBUG("Created {}: {}", typeid(T).name(), fmt::ptr(m_handle));
   }

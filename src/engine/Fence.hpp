@@ -9,12 +9,14 @@ namespace engine {
 
 class Fence {
  public:
+  using HandleType = VkFence;
+
   Fence(VkDevice device, const VkFenceCreateInfo& fenceInfo,
         const VkAllocationCallbacks* alloc = nullptr);
 
   virtual ~Fence();
 
-  [[nodiscard]] VkFence& getHandle();
+  [[nodiscard]] VkFence getHandle() const;
 
  private:
   VkFence m_fence = VK_NULL_HANDLE;

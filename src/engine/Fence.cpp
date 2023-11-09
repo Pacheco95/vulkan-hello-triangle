@@ -15,5 +15,5 @@ Fence::~Fence() {
   SPDLOG_DEBUG("Destroyed fence: {}", fmt::ptr(m_fence));
 }
 
-VkFence &Fence::getHandle() { return m_fence; }
+VkFence Fence::getHandle() const { return m_fence; }
 }  // namespace engine

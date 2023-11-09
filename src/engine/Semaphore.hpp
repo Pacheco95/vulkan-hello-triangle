@@ -9,6 +9,7 @@ namespace engine {
 
 class Semaphore {
  public:
+  using HandleType = VkSemaphore;
   Semaphore(VkDevice device, const VkSemaphoreCreateInfo& semaphoreInfo,
             const VkAllocationCallbacks* alloc = nullptr);
 

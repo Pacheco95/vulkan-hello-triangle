@@ -632,9 +632,8 @@ class Application {
     VkCommandBufferBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
-    if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS) {
-      throw std::runtime_error("failed to begin recording command buffer!");
-    }
+    ABORT_ON_FAIL(vkBeginCommandBuffer(commandBuffer, &beginInfo),
+                  "Failed to begin recording command buffer");
 
     VkRenderPassBeginInfo renderPassInfo{};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;

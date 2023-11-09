@@ -5,6 +5,7 @@
 #include "BinaryLoader.hpp"
 #include "Config.hpp"
 #include "Device.hpp"
+#include "Fence.hpp"
 #include "FrameBuffer.hpp"
 #include "GraphicsPipeline.hpp"
 #include "ImageView.hpp"
@@ -66,7 +67,7 @@ class Application {
 
   std::unique_ptr<Semaphore> imageAvailableSemaphore;
   std::unique_ptr<Semaphore> renderFinishedSemaphore;
-  VkFence inFlightFence;
+  std::unique_ptr<Fence> inFlightFence;
 
   void initWindow() {
     m_window = std::make_unique<Window>(
@@ -101,7 +102,7 @@ class Application {
   void cleanup() {
     imageAvailableSemaphore.reset();
     renderFinishedSemaphore.reset();
-    vkDestroyFence(m_device->getHandle(), inFlightFence, nullptr);
+    inFlightFence.reset();
     vkDestroyCommandPool(m_device->getHandle(), commandPool, nullptr);
     m_swapChainFrameBuffers.clear();
     m_graphicsPipeline.reset();
@@ -688,17 +689,13 @@ class Application {
     renderFinishedSemaphore =
         std::make_unique<Semaphore>(m_device->getHandle(), semaphoreInfo);
 
-    if (vkCreateFence(m_device->getHandle(), &fenceInfo, nullptr,
-                      &inFlightFence) != VK_SUCCESS) {
-      throw std::runtime_error(
-          "failed to create synchronization objects for a frame!");
-    }
+    inFlightFence = std::make_unique<Fence>(m_device->getHandle(), fenceInfo);
   }
 
   void drawFrame() {
-    vkWaitForFences(m_device->getHandle(), 1, &inFlightFence, VK_TRUE,
-                    UINT64_MAX);
-    vkResetFences(m_device->getHandle(), 1, &inFlightFence);
+    vkWaitForFences(m_device->getHandle(), 1, &inFlightFence->getHandle(),
+                    VK_TRUE, UINT64_MAX);
+    vkResetFences(m_device->getHandle(), 1, &inFlightFence->getHandle());
 
     uint32_t imageIndex;
     vkAcquireNextImageKHR(m_device->getHandle(), m_swapChain->getHandle(),
@@ -725,7 +722,8 @@ class Application {
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = signalSemaphores;
 
-    ABORT_ON_FAIL(vkQueueSubmit(m_graphicsQueue, 1, &submitInfo, inFlightFence),
+    ABORT_ON_FAIL(vkQueueSubmit(m_graphicsQueue, 1, &submitInfo,
+                                inFlightFence->getHandle()),
                   "Failed to submit draw command buffer");
 
     VkPresentInfoKHR presentInfo{};

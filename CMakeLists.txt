@@ -57,6 +57,8 @@ add_executable(VulkanHelloTriangle src/main.cpp
         src/engine/FrameBuffer.hpp
         src/engine/Semaphore.cpp
         src/engine/Semaphore.hpp
+        src/engine/Fence.cpp
+        src/engine/Fence.hpp
 )
 
 target_link_libraries(VulkanHelloTriangle

@@ -104,14 +104,14 @@ class Application {
       m_currentFrame = (m_currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
     }
 
-    vkDeviceWaitIdle(m_device->getHandle());
+    vkDeviceWaitIdle(*m_device);
   }
 
   void cleanup() {
     m_renderFinishedSemaphores.clear();
     m_imageAvailableSemaphores.clear();
     m_inFlightFences.clear();
-    vkDestroyCommandPool(m_device->getHandle(), m_commandPool, nullptr);
+    vkDestroyCommandPool(*m_device, m_commandPool, nullptr);
     m_swapChainFrameBuffers.clear();
     m_graphicsPipeline.reset();
     m_pipelineLayout.reset();
@@ -120,7 +120,7 @@ class Application {
     m_swapChain.reset();
     m_device.reset();
     m_validationLayer.reset();
-    vkDestroySurfaceKHR(m_instance->getHandle(), m_surface, nullptr);
+    vkDestroySurfaceKHR(*m_instance, m_surface, nullptr);
     m_instance.reset();
     m_window.reset();
   }
@@ -163,19 +163,19 @@ class Application {
 
   void setupDebugMessenger() {
     m_validationLayer =
-        std::make_unique<ValidationLayer>(m_instance->getHandle());
+        std::make_unique<ValidationLayer>(*m_instance);
   }
 
   void createSurface() {
     ABORT_ON_FAIL(
-        glfwCreateWindowSurface(m_instance->getHandle(), m_window->getHandle(),
+        glfwCreateWindowSurface(*m_instance, *m_window,
                                 nullptr, &m_surface),
         "Failed to create window surface");
   }
 
   void pickPhysicalDevice() {
     std::vector<VkPhysicalDevice> devices =
-        PhysicalDevice::enumeratePhysicalDevices(m_instance->getHandle());
+        PhysicalDevice::enumeratePhysicalDevices(*m_instance);
 
     for (const auto& device : devices) {
       if (isDeviceSuitable(device, m_surface)) {
@@ -223,7 +223,7 @@ class Application {
     }
 
     int width, height;
-    glfwGetFramebufferSize(m_window->getHandle(), &width, &height);
+    glfwGetFramebufferSize(*m_window, &width, &height);
 
     VkExtent2D actualExtent = {static_cast<uint32_t>(width),
                                static_cast<uint32_t>(height)};
@@ -400,12 +400,12 @@ class Application {
     createInfo.oldSwapchain = VK_NULL_HANDLE;
 
     m_swapChain =
-        std::make_unique<SwapChain>(m_device->getHandle(), createInfo, nullptr);
+        std::make_unique<SwapChain>(*m_device, createInfo, nullptr);
 
-    vkGetSwapchainImagesKHR(m_device->getHandle(), m_swapChain->getHandle(),
+    vkGetSwapchainImagesKHR(*m_device, *m_swapChain,
                             &imageCount, nullptr);
     m_swapChainImages.resize(imageCount);
-    vkGetSwapchainImagesKHR(m_device->getHandle(), m_swapChain->getHandle(),
+    vkGetSwapchainImagesKHR(*m_device, *m_swapChain,
                             &imageCount, m_swapChainImages.data());
 
     SPDLOG_DEBUG("Got {} swap chain images", m_swapChainImages.size());
@@ -433,7 +433,7 @@ class Application {
       createInfo.subresourceRange.baseArrayLayer = 0;
       createInfo.subresourceRange.layerCount = 1;
 
-      m_swapChainImageViews.emplace_back(m_device->getHandle(), createInfo);
+      m_swapChainImageViews.emplace_back(*m_device, createInfo);
     }
   }
 
@@ -443,7 +443,7 @@ class Application {
     createInfo.codeSize = code.size();
     createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
 
-    ShaderModule module(m_device->getHandle(), createInfo, nullptr);
+    ShaderModule module(*m_device, createInfo, nullptr);
     return module;
   }
 
@@ -474,7 +474,7 @@ class Application {
     renderPassInfo.subpassCount = 1;
     renderPassInfo.pSubpasses = &subpass;
 
-    m_renderPass = std::make_unique<RenderPass>(m_device->getHandle(),
+    m_renderPass = std::make_unique<RenderPass>(*m_device,
                                                 renderPassInfo, nullptr);
   }
 
@@ -489,14 +489,14 @@ class Application {
     vertShaderStageInfo.sType =
         VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
-    vertShaderStageInfo.module = vertShaderModule.getHandle();
+    vertShaderStageInfo.module = vertShaderModule;
     vertShaderStageInfo.pName = "main";
 
     VkPipelineShaderStageCreateInfo fragShaderStageInfo{};
     fragShaderStageInfo.sType =
         VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     fragShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-    fragShaderStageInfo.module = fragShaderModule.getHandle();
+    fragShaderStageInfo.module = fragShaderModule;
     fragShaderStageInfo.pName = "main";
 
     VkPipelineShaderStageCreateInfo shaderStages[] = {vertShaderStageInfo,
@@ -568,7 +568,7 @@ class Application {
     pipelineLayoutInfo.pushConstantRangeCount = 0;
 
     m_pipelineLayout = std::make_unique<PipelineLayout>(
-        m_device->getHandle(), pipelineLayoutInfo, nullptr);
+        *m_device, pipelineLayoutInfo, nullptr);
 
     VkGraphicsPipelineCreateInfo pipelineInfo{};
     pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -581,31 +581,31 @@ class Application {
     pipelineInfo.pMultisampleState = &multisampling;
     pipelineInfo.pColorBlendState = &colorBlending;
     pipelineInfo.pDynamicState = &dynamicState;
-    pipelineInfo.layout = m_pipelineLayout->getHandle();
-    pipelineInfo.renderPass = m_renderPass->getHandle();
+    pipelineInfo.layout = *m_pipelineLayout;
+    pipelineInfo.renderPass = *m_renderPass;
     pipelineInfo.subpass = 0;
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
     m_graphicsPipeline = std::make_unique<GraphicsPipeline>(
-        m_device->getHandle(), pipelineInfo, nullptr);
+        *m_device, pipelineInfo, nullptr);
   }
 
   void createFrameBuffers() {
     m_swapChainFrameBuffers.reserve(m_swapChainImageViews.size());
 
     for (const auto& imageView : m_swapChainImageViews) {
-      VkImageView attachments[] = {imageView.getHandle()};
+      VkImageView attachments[] = {imageView};
 
       VkFramebufferCreateInfo framebufferInfo{};
       framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-      framebufferInfo.renderPass = m_renderPass->getHandle();
+      framebufferInfo.renderPass = *m_renderPass;
       framebufferInfo.attachmentCount = 1;
       framebufferInfo.pAttachments = attachments;
       framebufferInfo.width = m_swapChainExtent.width;
       framebufferInfo.height = m_swapChainExtent.height;
       framebufferInfo.layers = 1;
 
-      m_swapChainFrameBuffers.emplace_back(m_device->getHandle(),
+      m_swapChainFrameBuffers.emplace_back(*m_device,
                                            framebufferInfo);
     }
   }
@@ -620,7 +620,7 @@ class Application {
     poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
 
     // TODO extract
-    if (vkCreateCommandPool(m_device->getHandle(), &poolInfo, nullptr,
+    if (vkCreateCommandPool(*m_device, &poolInfo, nullptr,
                             &m_commandPool) != VK_SUCCESS) {
       throw std::runtime_error("failed to create command pool!");
     }
@@ -635,7 +635,7 @@ class Application {
     allocInfo.commandBufferCount =
         static_cast<uint32_t>(m_commandBuffers.size());
 
-    ABORT_ON_FAIL(vkAllocateCommandBuffers(m_device->getHandle(), &allocInfo,
+    ABORT_ON_FAIL(vkAllocateCommandBuffers(*m_device, &allocInfo,
                                            m_commandBuffers.data()),
                   "Failed to allocate command buffers");
   }
@@ -650,9 +650,9 @@ class Application {
 
     VkRenderPassBeginInfo renderPassInfo{};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-    renderPassInfo.renderPass = m_renderPass->getHandle();
+    renderPassInfo.renderPass = *m_renderPass;
     renderPassInfo.framebuffer =
-        m_swapChainFrameBuffers[imageIndex].getHandle();
+        m_swapChainFrameBuffers[imageIndex];
     renderPassInfo.renderArea.offset = {0, 0};
     renderPassInfo.renderArea.extent = m_swapChainExtent;
 
@@ -664,7 +664,7 @@ class Application {
                          VK_SUBPASS_CONTENTS_INLINE);
 
     vkCmdBindPipeline(commandBuffers, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                      m_graphicsPipeline->getHandle());
+                      *m_graphicsPipeline);
 
     VkViewport viewport{};
     viewport.x = 0.0f;
@@ -700,7 +700,7 @@ class Application {
     fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
     fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-    VkDevice device = m_device->getHandle();
+    VkDevice device = *m_device;
 
     for (auto i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i) {
       m_imageAvailableSemaphores.emplace_back(device, semaphoreInfo);
@@ -710,14 +710,14 @@ class Application {
   }
 
   void drawFrame() {
-    VkFence inFlightFence = m_inFlightFences[m_currentFrame].getHandle();
+    VkFence inFlightFence = m_inFlightFences[m_currentFrame];
     VkSemaphore imageAvailableSemaphore =
-        m_imageAvailableSemaphores[m_currentFrame].getHandle();
-    VkSwapchainKHR swapChain = m_swapChain->getHandle();
-    VkDevice device = m_device->getHandle();
+        m_imageAvailableSemaphores[m_currentFrame];
+    VkSwapchainKHR swapChain = *m_swapChain;
+    VkDevice device = *m_device;
     VkCommandBuffer commandBuffer = m_commandBuffers[m_currentFrame];
     VkSemaphore renderFinishedSemaphore =
-        m_renderFinishedSemaphores[m_currentFrame].getHandle();
+        m_renderFinishedSemaphores[m_currentFrame];
 
     vkWaitForFences(device, 1, &inFlightFence, VK_TRUE, UINT64_MAX);
     vkResetFences(device, 1, &inFlightFence);

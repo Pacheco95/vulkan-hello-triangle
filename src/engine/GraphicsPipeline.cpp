@@ -16,6 +16,4 @@ GraphicsPipeline::~GraphicsPipeline() {
   vkDestroyPipeline(m_device, m_graphicsPipeline, m_alloc);
   SPDLOG_DEBUG("Destroyed graphics pipeline: {}", fmt::ptr(m_graphicsPipeline));
 }
-
-VkPipeline GraphicsPipeline::getHandle() const { return m_graphicsPipeline; }
 }  // namespace engine

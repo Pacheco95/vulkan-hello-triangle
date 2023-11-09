@@ -16,6 +16,4 @@ ShaderModule::~ShaderModule() {
   vkDestroyShaderModule(m_device, m_shaderModule, m_alloc);
   SPDLOG_DEBUG("Destroyed shader module: {}", fmt::ptr(m_shaderModule));
 }
-
-VkShaderModule ShaderModule::getHandle() const { return m_shaderModule; }
 }  // namespace engine

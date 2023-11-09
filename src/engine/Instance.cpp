@@ -15,5 +15,4 @@ Instance::~Instance() {
   SPDLOG_DEBUG("Destroyed Instance: {}", fmt::ptr(m_instance));
 }
 
-VkInstance Instance::getHandle() const { return m_instance; }
 }  // namespace engine

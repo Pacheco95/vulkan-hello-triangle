@@ -14,7 +14,7 @@ class Fence {
 
   virtual ~Fence();
 
-  [[nodiscard]] VkFence getHandle() const;
+  operator VkFence() { return m_fence; }
 
  private:
   VkFence m_fence = VK_NULL_HANDLE;

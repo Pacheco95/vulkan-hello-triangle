@@ -15,7 +15,9 @@ class PipelineLayout {
 
   virtual ~PipelineLayout();
 
-  [[nodiscard]] VkPipelineLayout getHandle() const;
+  operator VkPipelineLayout() {return m_pipelineLayout; }
+
+ private:
 
   VkPipelineLayout m_pipelineLayout = VK_NULL_HANDLE;
   VkDevice m_device;

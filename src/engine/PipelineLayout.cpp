@@ -15,6 +15,4 @@ PipelineLayout::~PipelineLayout() {
   vkDestroyPipelineLayout(m_device, m_pipelineLayout, m_alloc);
   SPDLOG_DEBUG("Destroyed pipeline layout: {}", fmt::ptr(m_pipelineLayout));
 }
-
-VkPipelineLayout PipelineLayout::getHandle() const { return m_pipelineLayout; }
 }  // namespace engine

@@ -14,7 +14,7 @@ class Instance {
 
   virtual ~Instance();
 
-  [[nodiscard]] VkInstance getHandle() const;
+  operator VkInstance() {return m_instance;}
 
  private:
   VkInstance m_instance = nullptr;

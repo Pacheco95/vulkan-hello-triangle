@@ -13,5 +13,4 @@ SwapChain::~SwapChain() {
   vkDestroySwapchainKHR(m_device, m_swapChain, m_alloc);
 }
 
-VkSwapchainKHR SwapChain::getHandle() const { return m_swapChain; }
 }  // namespace engine

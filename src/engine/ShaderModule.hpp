@@ -14,8 +14,7 @@ class ShaderModule {
 
   virtual ~ShaderModule();
 
-  [[nodiscard]] VkShaderModule getHandle() const;
-
+  operator VkShaderModule() {return m_shaderModule; }
  private:
   VkDevice m_device;
   VkShaderModule m_shaderModule = VK_NULL_HANDLE;

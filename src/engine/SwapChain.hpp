@@ -14,7 +14,7 @@ class SwapChain {
 
   virtual ~SwapChain();
 
-  [[nodiscard]] VkSwapchainKHR getHandle() const;
+  operator VkSwapchainKHR() { return m_swapChain; }
 
  private:
   VkSwapchainKHR m_swapChain = VK_NULL_HANDLE;

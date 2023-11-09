@@ -15,6 +15,4 @@ Semaphore::~Semaphore() {
   vkDestroySemaphore(m_device, m_semaphore, m_alloc);
   SPDLOG_DEBUG("Destroyed semaphore: {}", fmt::ptr(m_semaphore));
 }
-
-VkSemaphore Semaphore::getHandle() const { return m_semaphore; }
 }  // namespace engine

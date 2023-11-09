@@ -24,6 +24,4 @@ VkQueue Device::getQueue(uint32_t familyIndex, uint32_t queueIndex) const {
   vkGetDeviceQueue(m_device, familyIndex, queueIndex, &queue);
   return queue;
 }
-
-VkDevice Device::getHandle() const { return m_device; }
 }  // namespace engine

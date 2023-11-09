@@ -15,7 +15,9 @@ class GraphicsPipeline {
 
   virtual ~GraphicsPipeline();
 
-  [[nodiscard]] VkPipeline getHandle() const;
+  operator VkPipeline() {
+    return m_graphicsPipeline;
+  }
 
  private:
   VkPipeline m_graphicsPipeline = VK_NULL_HANDLE;

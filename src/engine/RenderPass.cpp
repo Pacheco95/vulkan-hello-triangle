@@ -15,6 +15,4 @@ RenderPass::~RenderPass() {
   vkDestroyRenderPass(m_device, m_renderPass, m_alloc);
   SPDLOG_DEBUG("Destroyed render pass: {}", fmt::ptr(m_renderPass));
 }
-
-VkRenderPass RenderPass::getHandle() const { return m_renderPass; }
 }  // namespace engine

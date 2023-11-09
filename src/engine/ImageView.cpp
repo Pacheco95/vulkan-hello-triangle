@@ -17,6 +17,4 @@ ImageView::~ImageView() {
   vkDestroyImageView(m_device, m_swapChainImageViews, m_alloc);
   SPDLOG_DEBUG("Destroyed image view: {}", fmt::ptr(m_swapChainImageViews));
 }
-
-VkImageView ImageView::getHandle() const { return m_swapChainImageViews; }
 }  // namespace engine

@@ -24,13 +24,13 @@ Window::Window(size_t width, size_t height, const std::string &title) {
 
   centerWindow();
 
-  SPDLOG_DEBUG("Created Window: {}", fmt::ptr(getHandle()));
+  SPDLOG_DEBUG("Created Window: {}", fmt::ptr(m_window));
 }
 
 Window::~Window() {
   if (m_window) {
     glfwDestroyWindow(m_window);
-    SPDLOG_DEBUG("Destroyed Window: {}", fmt::ptr(getHandle()));
+    SPDLOG_DEBUG("Destroyed Window: {}", fmt::ptr(m_window));
   }
 
   glfwTerminate();
@@ -58,8 +58,6 @@ void Window::centerWindow() {
   int yPos = (mode->height - windowHeight) / 2;
   glfwSetWindowPos(m_window, xPos, yPos);
 }
-
-GLFWwindow *Window::getHandle() const { return m_window; }
 
 std::vector<const char *> Window::getRequiredExtensions() {
   uint32_t glfwExtensionCount = 0;

@@ -14,6 +14,4 @@ Fence::~Fence() {
   vkDestroyFence(m_device, m_fence, m_alloc);
   SPDLOG_DEBUG("Destroyed fence: {}", fmt::ptr(m_fence));
 }
-
-VkFence Fence::getHandle() const { return m_fence; }
 }  // namespace engine

@@ -34,14 +34,6 @@ struct SwapChainSupportDetails {
   std::vector<VkPresentModeKHR> presentModes{};
 };
 
-template <typename T, typename U = typename T::HandleType>
-std::vector<U> getHandles(const std::vector<T>& vec) {
-  std::vector<U> handles;
-  handles.reserve(vec.size());
-  std::transform(vec.begin(), vec.end(), handles.begin(),
-                 std::mem_fn(&T::getHandle));
-}
-
 class Application {
  public:
   void run() {

@@ -727,10 +727,8 @@ class Application {
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = signalSemaphores;
 
-    if (vkQueueSubmit(m_graphicsQueue, 1, &submitInfo, inFlightFence) !=
-        VK_SUCCESS) {
-      throw std::runtime_error("failed to submit draw command buffer!");
-    }
+    ABORT_ON_FAIL(vkQueueSubmit(m_graphicsQueue, 1, &submitInfo, inFlightFence),
+                  "Failed to submit draw command buffer");
 
     VkPresentInfoKHR presentInfo{};
     presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;

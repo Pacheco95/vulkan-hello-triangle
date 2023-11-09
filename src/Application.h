@@ -76,9 +76,6 @@ using GraphicsPipeline = VkWrapper<
     createPipeline,
     vkDestroyPipeline>;
 
-// TODO move to config class
-constexpr int MAX_FRAMES_IN_FLIGHT = 2;
-
 namespace app {
 using namespace engine;
 
@@ -156,7 +153,7 @@ class Application {
     while (m_window->isOpen()) {
       m_window->pollEvents();
       drawFrame();
-      m_currentFrame = (m_currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+      m_currentFrame = (m_currentFrame + 1) % Config::MAX_FRAMES_IN_FLIGHT;
     }
 
     vkDeviceWaitIdle(*m_device);
@@ -205,7 +202,7 @@ class Application {
     VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
 
     if (Config::IS_VALIDATION_LAYERS_ENABLED) {
-      const std::vector<const char*>& layers = Config::VALIDATION_LAYERS;
+      const auto& layers = Config::VALIDATION_LAYERS;
       createInfo.enabledLayerCount = static_cast<uint32_t>(layers.size());
       createInfo.ppEnabledLayerNames = layers.data();
 
@@ -331,7 +328,7 @@ class Application {
         static_cast<uint32_t>(Config::DEVICE_EXTENSIONS.size());
     deviceCreateInfo.ppEnabledExtensionNames = Config::DEVICE_EXTENSIONS.data();
 
-    const std::vector<const char*>& layers = Config::VALIDATION_LAYERS;
+    const auto& layers = Config::VALIDATION_LAYERS;
 
     if (Config::IS_VALIDATION_LAYERS_ENABLED) {
       deviceCreateInfo.enabledLayerCount = static_cast<uint32_t>(layers.size());
@@ -695,7 +692,7 @@ class Application {
   }
 
   void createCommandBuffers() {
-    m_commandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
+    m_commandBuffers.resize(Config::MAX_FRAMES_IN_FLIGHT);
     VkCommandBufferAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
     allocInfo.commandPool = m_commandPool;
@@ -765,9 +762,9 @@ class Application {
   }
 
   void createSyncObjects() {
-    m_imageAvailableSemaphores.reserve(MAX_FRAMES_IN_FLIGHT);
-    m_renderFinishedSemaphores.reserve(MAX_FRAMES_IN_FLIGHT);
-    m_inFlightFences.reserve(MAX_FRAMES_IN_FLIGHT);
+    m_imageAvailableSemaphores.reserve(Config::MAX_FRAMES_IN_FLIGHT);
+    m_renderFinishedSemaphores.reserve(Config::MAX_FRAMES_IN_FLIGHT);
+    m_inFlightFences.reserve(Config::MAX_FRAMES_IN_FLIGHT);
 
     VkSemaphoreCreateInfo semaphoreInfo{};
     semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
@@ -778,7 +775,7 @@ class Application {
 
     VkDevice device = *m_device;
 
-    for (auto i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i) {
+    for (auto i = 0; i < Config::MAX_FRAMES_IN_FLIGHT; ++i) {
       m_imageAvailableSemaphores.emplace_back(device, semaphoreInfo);
       m_renderFinishedSemaphores.emplace_back(device, semaphoreInfo);
       m_inFlightFences.emplace_back(device, fenceInfo);

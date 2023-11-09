@@ -668,9 +668,7 @@ class Application {
 
     vkCmdEndRenderPass(commandBuffer);
 
-    if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
-      throw std::runtime_error("failed to record command buffer!");
-    }
+    ABORT_ON_FAIL(vkEndCommandBuffer(commandBuffer), "Failed to record command buffer");
   }
 
   void createSyncObjects() {

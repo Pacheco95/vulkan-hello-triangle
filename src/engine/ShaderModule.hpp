@@ -14,7 +14,8 @@ class ShaderModule {
 
   virtual ~ShaderModule();
 
-  operator VkShaderModule() {return m_shaderModule; }
+  operator VkShaderModule() { return m_shaderModule; }
+
  private:
   VkDevice m_device;
   VkShaderModule m_shaderModule = VK_NULL_HANDLE;

@@ -25,7 +25,7 @@ class Window {
 
   void pollEvents();
 
-  operator GLFWwindow*() {return m_window;}
+  operator GLFWwindow *() { return m_window; }
 
   static std::vector<const char *> getRequiredExtensions();
 

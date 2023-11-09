@@ -23,7 +23,7 @@ class FrameBuffer {
     SPDLOG_DEBUG("Destroyed frame buffer: {}", fmt::ptr(m_frameBuffer));
   }
 
-  operator VkFramebuffer() {return m_frameBuffer; }
+  operator VkFramebuffer() { return m_frameBuffer; }
 
  private:
   VkFramebuffer m_frameBuffer = VK_NULL_HANDLE;

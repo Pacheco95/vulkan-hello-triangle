@@ -15,9 +15,7 @@ class GraphicsPipeline {
 
   virtual ~GraphicsPipeline();
 
-  operator VkPipeline() {
-    return m_graphicsPipeline;
-  }
+  operator VkPipeline() { return m_graphicsPipeline; }
 
  private:
   VkPipeline m_graphicsPipeline = VK_NULL_HANDLE;

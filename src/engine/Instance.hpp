@@ -14,7 +14,7 @@ class Instance {
 
   virtual ~Instance();
 
-  operator VkInstance() {return m_instance;}
+  operator VkInstance() { return m_instance; }
 
  private:
   VkInstance m_instance = nullptr;

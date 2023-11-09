@@ -15,10 +15,9 @@ class PipelineLayout {
 
   virtual ~PipelineLayout();
 
-  operator VkPipelineLayout() {return m_pipelineLayout; }
+  operator VkPipelineLayout() { return m_pipelineLayout; }
 
  private:
-
   VkPipelineLayout m_pipelineLayout = VK_NULL_HANDLE;
   VkDevice m_device;
   const VkAllocationCallbacks* m_alloc;

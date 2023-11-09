@@ -14,7 +14,7 @@ class Semaphore {
 
   virtual ~Semaphore();
 
-  operator VkSemaphore () {return m_semaphore; }
+  operator VkSemaphore() { return m_semaphore; }
 
  private:
   VkSemaphore m_semaphore = VK_NULL_HANDLE;

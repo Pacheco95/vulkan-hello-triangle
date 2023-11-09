@@ -162,14 +162,12 @@ class Application {
   }
 
   void setupDebugMessenger() {
-    m_validationLayer =
-        std::make_unique<ValidationLayer>(*m_instance);
+    m_validationLayer = std::make_unique<ValidationLayer>(*m_instance);
   }
 
   void createSurface() {
     ABORT_ON_FAIL(
-        glfwCreateWindowSurface(*m_instance, *m_window,
-                                nullptr, &m_surface),
+        glfwCreateWindowSurface(*m_instance, *m_window, nullptr, &m_surface),
         "Failed to create window surface");
   }
 
@@ -399,14 +397,12 @@ class Application {
 
     createInfo.oldSwapchain = VK_NULL_HANDLE;
 
-    m_swapChain =
-        std::make_unique<SwapChain>(*m_device, createInfo, nullptr);
+    m_swapChain = std::make_unique<SwapChain>(*m_device, createInfo, nullptr);
 
-    vkGetSwapchainImagesKHR(*m_device, *m_swapChain,
-                            &imageCount, nullptr);
+    vkGetSwapchainImagesKHR(*m_device, *m_swapChain, &imageCount, nullptr);
     m_swapChainImages.resize(imageCount);
-    vkGetSwapchainImagesKHR(*m_device, *m_swapChain,
-                            &imageCount, m_swapChainImages.data());
+    vkGetSwapchainImagesKHR(*m_device, *m_swapChain, &imageCount,
+                            m_swapChainImages.data());
 
     SPDLOG_DEBUG("Got {} swap chain images", m_swapChainImages.size());
 
@@ -474,8 +470,8 @@ class Application {
     renderPassInfo.subpassCount = 1;
     renderPassInfo.pSubpasses = &subpass;
 
-    m_renderPass = std::make_unique<RenderPass>(*m_device,
-                                                renderPassInfo, nullptr);
+    m_renderPass =
+        std::make_unique<RenderPass>(*m_device, renderPassInfo, nullptr);
   }
 
   void createGraphicsPipeline() {
@@ -586,8 +582,8 @@ class Application {
     pipelineInfo.subpass = 0;
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
-    m_graphicsPipeline = std::make_unique<GraphicsPipeline>(
-        *m_device, pipelineInfo, nullptr);
+    m_graphicsPipeline =
+        std::make_unique<GraphicsPipeline>(*m_device, pipelineInfo, nullptr);
   }
 
   void createFrameBuffers() {
@@ -605,8 +601,7 @@ class Application {
       framebufferInfo.height = m_swapChainExtent.height;
       framebufferInfo.layers = 1;
 
-      m_swapChainFrameBuffers.emplace_back(*m_device,
-                                           framebufferInfo);
+      m_swapChainFrameBuffers.emplace_back(*m_device, framebufferInfo);
     }
   }
 
@@ -620,8 +615,8 @@ class Application {
     poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
 
     // TODO extract
-    if (vkCreateCommandPool(*m_device, &poolInfo, nullptr,
-                            &m_commandPool) != VK_SUCCESS) {
+    if (vkCreateCommandPool(*m_device, &poolInfo, nullptr, &m_commandPool) !=
+        VK_SUCCESS) {
       throw std::runtime_error("failed to create command pool!");
     }
   }
@@ -651,8 +646,7 @@ class Application {
     VkRenderPassBeginInfo renderPassInfo{};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     renderPassInfo.renderPass = *m_renderPass;
-    renderPassInfo.framebuffer =
-        m_swapChainFrameBuffers[imageIndex];
+    renderPassInfo.framebuffer = m_swapChainFrameBuffers[imageIndex];
     renderPassInfo.renderArea.offset = {0, 0};
     renderPassInfo.renderArea.extent = m_swapChainExtent;
 

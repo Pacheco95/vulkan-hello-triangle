@@ -12,8 +12,9 @@ class ImageView {
 
   virtual ~ImageView();
 
-  operator VkImageView() {return m_swapChainImageViews; }
-  operator VkImageView() const {return m_swapChainImageViews; }
+  operator VkImageView() { return m_swapChainImageViews; }
+
+  operator VkImageView() const { return m_swapChainImageViews; }
 
  private:
   VkImageView m_swapChainImageViews = VK_NULL_HANDLE;

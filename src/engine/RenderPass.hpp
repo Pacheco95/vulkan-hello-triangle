@@ -14,7 +14,8 @@ class RenderPass {
 
   virtual ~RenderPass();
 
-  operator VkRenderPass() {return m_renderPass;}
+  operator VkRenderPass() { return m_renderPass; }
+
  private:
   VkRenderPass m_renderPass = VK_NULL_HANDLE;
   VkDevice m_device;

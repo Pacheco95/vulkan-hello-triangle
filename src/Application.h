@@ -231,6 +231,7 @@ class Application {
     for (const auto& device : devices) {
       if (isDeviceSuitable(device, m_surface)) {
         m_physicalDevice = device;
+        break;
       }
     }
 

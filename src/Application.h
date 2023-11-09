@@ -623,10 +623,9 @@ class Application {
     allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
     allocInfo.commandBufferCount = 1;
 
-    if (vkAllocateCommandBuffers(m_device->getHandle(), &allocInfo,
-                                 &commandBuffer) != VK_SUCCESS) {
-      throw std::runtime_error("failed to allocate command buffers!");
-    }
+    ABORT_ON_FAIL(vkAllocateCommandBuffers(m_device->getHandle(), &allocInfo,
+                                           &commandBuffer),
+                  "Failed to allocate command buffers");
   }
 
   void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex) {

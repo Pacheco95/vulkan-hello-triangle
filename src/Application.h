@@ -6,21 +6,48 @@
 #include "BinaryLoader.hpp"
 #include "Config.hpp"
 #include "Device.hpp"
-#include "Fence.hpp"
-#include "FrameBuffer.hpp"
-#include "GraphicsPipeline.hpp"
-#include "ImageView.hpp"
 #include "Instance.hpp"
 #include "PhysicalDevice.hpp"
-#include "PipelineLayout.hpp"
 #include "QueueFamily.hpp"
-#include "RenderPass.hpp"
-#include "Semaphore.hpp"
-#include "ShaderModule.hpp"
-#include "SwapChain.hpp"
 #include "Utils.hpp"
 #include "ValidationLayer.hpp"
 #include "Window.hpp"
+#include "Wrapper.hpp"
+
+VKAPI_ATTR VkResult VKAPI_CALL createPipeline(
+    VkDevice device, const VkGraphicsPipelineCreateInfo* pCreateInfos,
+    const VkAllocationCallbacks* pAllocator, VkPipeline* pPipelines) {
+  return vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, pCreateInfos,
+                                   pAllocator, pPipelines);
+}
+
+using ImageView = VkWrapper<VkImageView, VkImageViewCreateInfo,
+                            vkCreateImageView, vkDestroyImageView>;
+
+using FrameBuffer = VkWrapper<VkFramebuffer, VkFramebufferCreateInfo,
+                              vkCreateFramebuffer, vkDestroyFramebuffer>;
+
+using RenderPass = VkWrapper<VkRenderPass, VkRenderPassCreateInfo,
+                             vkCreateRenderPass, vkDestroyRenderPass>;
+
+using Semaphore = VkWrapper<VkSemaphore, VkSemaphoreCreateInfo,
+                            vkCreateSemaphore, vkDestroySemaphore>;
+
+using ShaderModule = VkWrapper<VkShaderModule, VkShaderModuleCreateInfo,
+                               vkCreateShaderModule, vkDestroyShaderModule>;
+
+using SwapChain = VkWrapper<VkSwapchainKHR, VkSwapchainCreateInfoKHR,
+                            vkCreateSwapchainKHR, vkDestroySwapchainKHR>;
+
+using Fence =
+    VkWrapper<VkFence, VkFenceCreateInfo, vkCreateFence, vkDestroyFence>;
+
+using PipelineLayout =
+    VkWrapper<VkPipelineLayout, VkPipelineLayoutCreateInfo,
+              vkCreatePipelineLayout, vkDestroyPipelineLayout>;
+
+using GraphicsPipeline = VkWrapper<VkPipeline, VkGraphicsPipelineCreateInfo,
+                                   createPipeline, vkDestroyPipeline>;
 
 // TODO move to config class
 constexpr int MAX_FRAMES_IN_FLIGHT = 2;

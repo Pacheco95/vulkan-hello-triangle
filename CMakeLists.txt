@@ -39,26 +39,9 @@ add_executable(VulkanHelloTriangle src/main.cpp
         src/engine/QueueFamily.hpp
         src/engine/Device.cpp
         src/engine/Device.hpp
-        src/engine/SwapChain.cpp
-        src/engine/SwapChain.hpp
-        src/engine/ImageView.cpp
-        src/engine/ImageView.hpp
         src/engine/BinaryLoader.cpp
         src/engine/BinaryLoader.hpp
-        src/engine/ShaderModule.cpp
-        src/engine/ShaderModule.hpp
-        src/engine/PipelineLayout.cpp
-        src/engine/PipelineLayout.hpp
-        src/engine/RenderPass.cpp
-        src/engine/RenderPass.hpp
-        src/engine/GraphicsPipeline.cpp
-        src/engine/GraphicsPipeline.hpp
-        src/engine/FrameBuffer.cpp
-        src/engine/FrameBuffer.hpp
-        src/engine/Semaphore.cpp
-        src/engine/Semaphore.hpp
-        src/engine/Fence.cpp
-        src/engine/Fence.hpp
+        src/engine/Wrapper.hpp
 )
 
 target_link_libraries(VulkanHelloTriangle

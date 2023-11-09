@@ -62,11 +62,11 @@ class Application {
   VkQueue m_presentQueue;
 
   std::unique_ptr<SwapChain> m_swapChain;
-  std::vector<VkImage> swapChainImages;
-  std::vector<ImageView> swapChainImageViews;
+  std::vector<VkImage> m_swapChainImages;
+  std::vector<ImageView> m_swapChainImageViews;
 
-  VkFormat swapChainImageFormat;
-  VkExtent2D swapChainExtent;
+  VkFormat m_swapChainImageFormat;
+  VkExtent2D m_swapChainExtent;
 
   VkSurfaceKHR m_surface;
 
@@ -75,14 +75,14 @@ class Application {
   std::unique_ptr<GraphicsPipeline> m_graphicsPipeline;
 
   std::vector<FrameBuffer> m_swapChainFrameBuffers;
-  VkCommandPool commandPool;
-  std::vector<VkCommandBuffer> commandBuffers;
+  VkCommandPool m_commandPool;
+  std::vector<VkCommandBuffer> m_commandBuffers;
 
-  std::vector<Semaphore> imageAvailableSemaphores;
-  std::vector<Semaphore> renderFinishedSemaphores;
-  std::vector<Fence> inFlightFences;
+  std::vector<Semaphore> m_imageAvailableSemaphores;
+  std::vector<Semaphore> m_renderFinishedSemaphores;
+  std::vector<Fence> m_inFlightFences;
 
-  uint32_t currentFrame = 0;
+  uint32_t m_currentFrame = 0;
 
   void initWindow() {
     m_window = std::make_unique<Window>(
@@ -109,22 +109,22 @@ class Application {
     while (m_window->isOpen()) {
       m_window->pollEvents();
       drawFrame();
-      currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+      m_currentFrame = (m_currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
     }
 
     vkDeviceWaitIdle(m_device->getHandle());
   }
 
   void cleanup() {
-    renderFinishedSemaphores.clear();
-    imageAvailableSemaphores.clear();
-    inFlightFences.clear();
-    vkDestroyCommandPool(m_device->getHandle(), commandPool, nullptr);
+    m_renderFinishedSemaphores.clear();
+    m_imageAvailableSemaphores.clear();
+    m_inFlightFences.clear();
+    vkDestroyCommandPool(m_device->getHandle(), m_commandPool, nullptr);
     m_swapChainFrameBuffers.clear();
     m_graphicsPipeline.reset();
     m_pipelineLayout.reset();
     m_renderPass.reset();
-    swapChainImageViews.clear();
+    m_swapChainImageViews.clear();
     m_swapChain.reset();
     m_device.reset();
     m_validationLayer.reset();
@@ -412,25 +412,25 @@ class Application {
 
     vkGetSwapchainImagesKHR(m_device->getHandle(), m_swapChain->getHandle(),
                             &imageCount, nullptr);
-    swapChainImages.resize(imageCount);
+    m_swapChainImages.resize(imageCount);
     vkGetSwapchainImagesKHR(m_device->getHandle(), m_swapChain->getHandle(),
-                            &imageCount, swapChainImages.data());
+                            &imageCount, m_swapChainImages.data());
 
-    SPDLOG_DEBUG("Got {} swap chain images", swapChainImages.size());
+    SPDLOG_DEBUG("Got {} swap chain images", m_swapChainImages.size());
 
-    swapChainImageFormat = surfaceFormat.format;
-    swapChainExtent = extent;
+    m_swapChainImageFormat = surfaceFormat.format;
+    m_swapChainExtent = extent;
   }
 
   void createImageViews() {
-    swapChainImageViews.reserve(swapChainImages.size());
+    m_swapChainImageViews.reserve(m_swapChainImages.size());
 
-    for (auto& swapChainImage : swapChainImages) {
+    for (auto& swapChainImage : m_swapChainImages) {
       VkImageViewCreateInfo createInfo{};
       createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
       createInfo.image = swapChainImage;
       createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-      createInfo.format = swapChainImageFormat;
+      createInfo.format = m_swapChainImageFormat;
       createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
       createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
       createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
@@ -441,7 +441,7 @@ class Application {
       createInfo.subresourceRange.baseArrayLayer = 0;
       createInfo.subresourceRange.layerCount = 1;
 
-      swapChainImageViews.emplace_back(m_device->getHandle(), createInfo);
+      m_swapChainImageViews.emplace_back(m_device->getHandle(), createInfo);
     }
   }
 
@@ -457,7 +457,7 @@ class Application {
 
   void createRenderPass() {
     VkAttachmentDescription colorAttachment{};
-    colorAttachment.format = swapChainImageFormat;
+    colorAttachment.format = m_swapChainImageFormat;
     colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
     colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
     colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -599,9 +599,9 @@ class Application {
   }
 
   void createFrameBuffers() {
-    m_swapChainFrameBuffers.reserve(swapChainImageViews.size());
+    m_swapChainFrameBuffers.reserve(m_swapChainImageViews.size());
 
-    for (const auto& imageView : swapChainImageViews) {
+    for (const auto& imageView : m_swapChainImageViews) {
       VkImageView attachments[] = {imageView.getHandle()};
 
       VkFramebufferCreateInfo framebufferInfo{};
@@ -609,8 +609,8 @@ class Application {
       framebufferInfo.renderPass = m_renderPass->getHandle();
       framebufferInfo.attachmentCount = 1;
       framebufferInfo.pAttachments = attachments;
-      framebufferInfo.width = swapChainExtent.width;
-      framebufferInfo.height = swapChainExtent.height;
+      framebufferInfo.width = m_swapChainExtent.width;
+      framebufferInfo.height = m_swapChainExtent.height;
       framebufferInfo.layers = 1;
 
       m_swapChainFrameBuffers.emplace_back(m_device->getHandle(),
@@ -629,21 +629,22 @@ class Application {
 
     // TODO extract
     if (vkCreateCommandPool(m_device->getHandle(), &poolInfo, nullptr,
-                            &commandPool) != VK_SUCCESS) {
+                            &m_commandPool) != VK_SUCCESS) {
       throw std::runtime_error("failed to create command pool!");
     }
   }
 
   void createCommandBuffers() {
-    commandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
+    m_commandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
     VkCommandBufferAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-    allocInfo.commandPool = commandPool;
+    allocInfo.commandPool = m_commandPool;
     allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-    allocInfo.commandBufferCount = static_cast<uint32_t>(commandBuffers.size());
+    allocInfo.commandBufferCount =
+        static_cast<uint32_t>(m_commandBuffers.size());
 
     ABORT_ON_FAIL(vkAllocateCommandBuffers(m_device->getHandle(), &allocInfo,
-                                           commandBuffers.data()),
+                                           m_commandBuffers.data()),
                   "Failed to allocate command buffers");
   }
 
@@ -661,7 +662,7 @@ class Application {
     renderPassInfo.framebuffer =
         m_swapChainFrameBuffers[imageIndex].getHandle();
     renderPassInfo.renderArea.offset = {0, 0};
-    renderPassInfo.renderArea.extent = swapChainExtent;
+    renderPassInfo.renderArea.extent = m_swapChainExtent;
 
     VkClearValue clearColor = {{{0.0f, 0.0f, 0.0f, 1.0f}}};
     renderPassInfo.clearValueCount = 1;
@@ -676,15 +677,15 @@ class Application {
     VkViewport viewport{};
     viewport.x = 0.0f;
     viewport.y = 0.0f;
-    viewport.width = (float)swapChainExtent.width;
-    viewport.height = (float)swapChainExtent.height;
+    viewport.width = (float)m_swapChainExtent.width;
+    viewport.height = (float)m_swapChainExtent.height;
     viewport.minDepth = 0.0f;
     viewport.maxDepth = 1.0f;
     vkCmdSetViewport(commandBuffers, 0, 1, &viewport);
 
     VkRect2D scissor{};
     scissor.offset = {0, 0};
-    scissor.extent = swapChainExtent;
+    scissor.extent = m_swapChainExtent;
     vkCmdSetScissor(commandBuffers, 0, 1, &scissor);
 
     vkCmdDraw(commandBuffers, 3, 1, 0, 0);
@@ -696,9 +697,9 @@ class Application {
   }
 
   void createSyncObjects() {
-    imageAvailableSemaphores.reserve(MAX_FRAMES_IN_FLIGHT);
-    renderFinishedSemaphores.reserve(MAX_FRAMES_IN_FLIGHT);
-    inFlightFences.reserve(MAX_FRAMES_IN_FLIGHT);
+    m_imageAvailableSemaphores.reserve(MAX_FRAMES_IN_FLIGHT);
+    m_renderFinishedSemaphores.reserve(MAX_FRAMES_IN_FLIGHT);
+    m_inFlightFences.reserve(MAX_FRAMES_IN_FLIGHT);
 
     VkSemaphoreCreateInfo semaphoreInfo{};
     semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
@@ -707,24 +708,24 @@ class Application {
     fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
     fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
+    VkDevice device = m_device->getHandle();
+
     for (auto i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i) {
-      imageAvailableSemaphores.emplace_back(m_device->getHandle(),
-                                            semaphoreInfo);
-      renderFinishedSemaphores.emplace_back(m_device->getHandle(),
-                                            semaphoreInfo);
-      inFlightFences.emplace_back(m_device->getHandle(), fenceInfo);
+      m_imageAvailableSemaphores.emplace_back(device, semaphoreInfo);
+      m_renderFinishedSemaphores.emplace_back(device, semaphoreInfo);
+      m_inFlightFences.emplace_back(device, fenceInfo);
     }
   }
 
   void drawFrame() {
-    VkFence inFlightFence = inFlightFences[currentFrame].getHandle();
+    VkFence inFlightFence = m_inFlightFences[m_currentFrame].getHandle();
     VkSemaphore imageAvailableSemaphore =
-        imageAvailableSemaphores[currentFrame].getHandle();
+        m_imageAvailableSemaphores[m_currentFrame].getHandle();
     VkSwapchainKHR swapChain = m_swapChain->getHandle();
     VkDevice device = m_device->getHandle();
-    VkCommandBuffer commandBuffer = commandBuffers[currentFrame];
+    VkCommandBuffer commandBuffer = m_commandBuffers[m_currentFrame];
     VkSemaphore renderFinishedSemaphore =
-        renderFinishedSemaphores[currentFrame].getHandle();
+        m_renderFinishedSemaphores[m_currentFrame].getHandle();
 
     vkWaitForFences(device, 1, &inFlightFence, VK_TRUE, UINT64_MAX);
     vkResetFences(device, 1, &inFlightFence);

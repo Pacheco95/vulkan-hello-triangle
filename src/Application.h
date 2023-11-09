@@ -13,6 +13,7 @@
 #include "PipelineLayout.hpp"
 #include "QueueFamily.hpp"
 #include "RenderPass.hpp"
+#include "Semaphore.hpp"
 #include "ShaderModule.hpp"
 #include "SwapChain.hpp"
 #include "Utils.hpp"
@@ -63,8 +64,8 @@ class Application {
   VkCommandPool commandPool;
   VkCommandBuffer commandBuffer;
 
-  VkSemaphore imageAvailableSemaphore;
-  VkSemaphore renderFinishedSemaphore;
+  std::unique_ptr<Semaphore> imageAvailableSemaphore;
+  std::unique_ptr<Semaphore> renderFinishedSemaphore;
   VkFence inFlightFence;
 
   void initWindow() {
@@ -98,8 +99,8 @@ class Application {
   }
 
   void cleanup() {
-    vkDestroySemaphore(m_device->getHandle(), imageAvailableSemaphore, nullptr);
-    vkDestroySemaphore(m_device->getHandle(), renderFinishedSemaphore, nullptr);
+    imageAvailableSemaphore.reset();
+    renderFinishedSemaphore.reset();
     vkDestroyFence(m_device->getHandle(), inFlightFence, nullptr);
     vkDestroyCommandPool(m_device->getHandle(), commandPool, nullptr);
     m_swapChainFrameBuffers.clear();
@@ -622,7 +623,8 @@ class Application {
     allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
     allocInfo.commandBufferCount = 1;
 
-    if (vkAllocateCommandBuffers(m_device->getHandle(), &allocInfo, &commandBuffer) != VK_SUCCESS) {
+    if (vkAllocateCommandBuffers(m_device->getHandle(), &allocInfo,
+                                 &commandBuffer) != VK_SUCCESS) {
       throw std::runtime_error("failed to allocate command buffers!");
     }
   }
@@ -638,7 +640,8 @@ class Application {
     VkRenderPassBeginInfo renderPassInfo{};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     renderPassInfo.renderPass = m_renderPass->getHandle();
-    renderPassInfo.framebuffer = m_swapChainFrameBuffers[imageIndex].getHandle();
+    renderPassInfo.framebuffer =
+        m_swapChainFrameBuffers[imageIndex].getHandle();
     renderPassInfo.renderArea.offset = {0, 0};
     renderPassInfo.renderArea.extent = swapChainExtent;
 
@@ -646,15 +649,17 @@ class Application {
     renderPassInfo.clearValueCount = 1;
     renderPassInfo.pClearValues = &clearColor;
 
-    vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+    vkCmdBeginRenderPass(commandBuffer, &renderPassInfo,
+                         VK_SUBPASS_CONTENTS_INLINE);
 
-    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline->getHandle());
+    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                      m_graphicsPipeline->getHandle());
 
     VkViewport viewport{};
     viewport.x = 0.0f;
     viewport.y = 0.0f;
-    viewport.width = (float) swapChainExtent.width;
-    viewport.height = (float) swapChainExtent.height;
+    viewport.width = (float)swapChainExtent.width;
+    viewport.height = (float)swapChainExtent.height;
     viewport.minDepth = 0.0f;
     viewport.maxDepth = 1.0f;
     vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
@@ -668,7 +673,8 @@ class Application {
 
     vkCmdEndRenderPass(commandBuffer);
 
-    ABORT_ON_FAIL(vkEndCommandBuffer(commandBuffer), "Failed to record command buffer");
+    ABORT_ON_FAIL(vkEndCommandBuffer(commandBuffer),
+                  "Failed to record command buffer");
   }
 
   void createSyncObjects() {
@@ -679,20 +685,27 @@ class Application {
     fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
     fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-    if (vkCreateSemaphore(m_device->getHandle(), &semaphoreInfo, nullptr, &imageAvailableSemaphore) != VK_SUCCESS ||
-        vkCreateSemaphore(m_device->getHandle(), &semaphoreInfo, nullptr, &renderFinishedSemaphore) != VK_SUCCESS ||
-        vkCreateFence(m_device->getHandle(), &fenceInfo, nullptr, &inFlightFence) != VK_SUCCESS) {
-      throw std::runtime_error("failed to create synchronization objects for a frame!");
-    }
+    imageAvailableSemaphore =
+        std::make_unique<Semaphore>(m_device->getHandle(), semaphoreInfo);
+    renderFinishedSemaphore =
+        std::make_unique<Semaphore>(m_device->getHandle(), semaphoreInfo);
 
+    if (vkCreateFence(m_device->getHandle(), &fenceInfo, nullptr,
+                      &inFlightFence) != VK_SUCCESS) {
+      throw std::runtime_error(
+          "failed to create synchronization objects for a frame!");
+    }
   }
 
   void drawFrame() {
-    vkWaitForFences(m_device->getHandle(), 1, &inFlightFence, VK_TRUE, UINT64_MAX);
+    vkWaitForFences(m_device->getHandle(), 1, &inFlightFence, VK_TRUE,
+                    UINT64_MAX);
     vkResetFences(m_device->getHandle(), 1, &inFlightFence);
 
     uint32_t imageIndex;
-    vkAcquireNextImageKHR(m_device->getHandle(), m_swapChain->getHandle(), UINT64_MAX, imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
+    vkAcquireNextImageKHR(m_device->getHandle(), m_swapChain->getHandle(),
+                          UINT64_MAX, imageAvailableSemaphore->getHandle(),
+                          VK_NULL_HANDLE, &imageIndex);
 
     vkResetCommandBuffer(commandBuffer, /*VkCommandBufferResetFlagBits*/ 0);
     recordCommandBuffer(commandBuffer, imageIndex);
@@ -700,8 +713,9 @@ class Application {
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-    VkSemaphore waitSemaphores[] = {imageAvailableSemaphore};
-    VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+    VkSemaphore waitSemaphores[] = {imageAvailableSemaphore->getHandle()};
+    VkPipelineStageFlags waitStages[] = {
+        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
     submitInfo.waitSemaphoreCount = 1;
     submitInfo.pWaitSemaphores = waitSemaphores;
     submitInfo.pWaitDstStageMask = waitStages;
@@ -709,11 +723,12 @@ class Application {
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &commandBuffer;
 
-    VkSemaphore signalSemaphores[] = {renderFinishedSemaphore};
+    VkSemaphore signalSemaphores[] = {renderFinishedSemaphore->getHandle()};
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = signalSemaphores;
 
-    if (vkQueueSubmit(m_graphicsQueue, 1, &submitInfo, inFlightFence) != VK_SUCCESS) {
+    if (vkQueueSubmit(m_graphicsQueue, 1, &submitInfo, inFlightFence) !=
+        VK_SUCCESS) {
       throw std::runtime_error("failed to submit draw command buffer!");
     }
 

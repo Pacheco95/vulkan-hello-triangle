@@ -219,7 +219,9 @@ class Application {
   }
 
   void setupDebugMessenger() {
-    m_validationLayer = std::make_unique<ValidationLayer>(*m_instance);
+    if (Config::IS_VALIDATION_LAYERS_ENABLED) {
+      m_validationLayer = std::make_unique<ValidationLayer>(*m_instance);
+    }
   }
 
   void createSurface() {

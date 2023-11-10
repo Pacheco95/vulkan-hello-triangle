@@ -76,6 +76,12 @@ using GraphicsPipeline = VkWrapper<
     createPipeline,
     vkDestroyPipeline>;
 
+using CommandPool = VkWrapper<
+    VkCommandPool,
+    VkCommandPoolCreateInfo,
+    vkCreateCommandPool,
+    vkDestroyCommandPool>;
+
 namespace app {
 using namespace engine;
 
@@ -117,7 +123,7 @@ class Application {
   std::unique_ptr<GraphicsPipeline> m_graphicsPipeline;
 
   std::vector<FrameBuffer> m_swapChainFrameBuffers;
-  VkCommandPool m_commandPool;
+  std::unique_ptr<CommandPool> m_commandPool;
   std::vector<VkCommandBuffer> m_commandBuffers;
 
   std::vector<Semaphore> m_imageAvailableSemaphores;
@@ -169,7 +175,7 @@ class Application {
     m_renderFinishedSemaphores.clear();
     m_imageAvailableSemaphores.clear();
     m_inFlightFences.clear();
-    vkDestroyCommandPool(*m_device, m_commandPool, nullptr);
+    m_commandPool.reset();
 
     m_graphicsPipeline.reset();
     m_pipelineLayout.reset();
@@ -691,18 +697,14 @@ class Application {
     poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
     poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
 
-    // TODO extract
-    if (vkCreateCommandPool(*m_device, &poolInfo, nullptr, &m_commandPool) !=
-        VK_SUCCESS) {
-      throw std::runtime_error("failed to create command pool!");
-    }
+    m_commandPool = std::make_unique<CommandPool>(*m_device, poolInfo);
   }
 
   void createCommandBuffers() {
     m_commandBuffers.resize(Config::MAX_FRAMES_IN_FLIGHT);
     VkCommandBufferAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-    allocInfo.commandPool = m_commandPool;
+    allocInfo.commandPool = *m_commandPool;
     allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
     allocInfo.commandBufferCount =
         static_cast<uint32_t>(m_commandBuffers.size());

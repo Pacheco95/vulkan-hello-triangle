@@ -95,7 +95,6 @@ class Application {
   }
 
  private:
-  // TODO add m_ prefix
   std::unique_ptr<Window> m_window;
   std::unique_ptr<Instance> m_instance;
   std::unique_ptr<ValidationLayer> m_validationLayer;
@@ -125,7 +124,7 @@ class Application {
   std::vector<Semaphore> m_renderFinishedSemaphores;
   std::vector<Fence> m_inFlightFences;
 
-  bool framebufferResized = false;
+  bool m_framebufferResized = false;
 
   uint32_t m_currentFrame = 0;
 
@@ -864,8 +863,8 @@ class Application {
     result = vkQueuePresentKHR(m_presentQueue, &presentInfo);
 
     if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR ||
-        framebufferResized) {
-      framebufferResized = false;
+        m_framebufferResized) {
+      m_framebufferResized = false;
       recreateSwapChain();
     } else if (result != VK_SUCCESS) {
       ABORT_ON_FAIL(result, "Failed to present swap chain image");
@@ -901,7 +900,7 @@ class Application {
       [[maybe_unused]] int height
   ) {
     auto app = reinterpret_cast<Application*>(glfwGetWindowUserPointer(window));
-    app->framebufferResized = true;
+    app->m_framebufferResized = true;
   }
 };
 

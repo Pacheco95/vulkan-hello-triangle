@@ -11,7 +11,7 @@ class Utils {
  public:
   static std::string versionNumberToString(uint32_t versionNumber);
 
-  static void printDeviceInfo(const VkPhysicalDeviceProperties &deviceProps);
+  static void printPhysicalDeviceInfo(const VkPhysicalDevice &physicalDevice);
 };
 
 }  // namespace engine

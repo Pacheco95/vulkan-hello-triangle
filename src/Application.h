@@ -251,10 +251,7 @@ class Application {
       ABORT("Failed to find a suitable GPU");
     }
 
-    VkPhysicalDeviceProperties deviceProps;
-    vkGetPhysicalDeviceProperties(m_physicalDevice, &deviceProps);
-
-    Utils::printDeviceInfo(deviceProps);
+    Utils::printPhysicalDeviceInfo(m_physicalDevice);
   }
 
   static VkSurfaceFormatKHR chooseSwapSurfaceFormat(
@@ -267,7 +264,7 @@ class Application {
       }
     }
 
-    return availableFormats[0];
+    return availableFormats.front();
   }
 
   static VkPresentModeKHR chooseSwapPresentMode(
@@ -299,6 +296,7 @@ class Application {
         capabilities.minImageExtent.width,
         capabilities.maxImageExtent.width
     );
+
     actualExtent.height = std::clamp(
         actualExtent.height,
         capabilities.minImageExtent.height,
@@ -313,10 +311,12 @@ class Application {
         QueueFamily::findSuitableQueueFamilies(m_physicalDevice, m_surface);
 
     std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
+
     std::set<uint32_t> uniqueQueueFamilies = {
         indices.graphicsFamily.value(), indices.presentFamily.value()};
 
     float queuePriority = 1.0f;
+
     for (uint32_t queueFamily : uniqueQueueFamilies) {
       VkDeviceQueueCreateInfo queueCreateInfo{};
       queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
@@ -329,16 +329,19 @@ class Application {
     VkPhysicalDeviceFeatures deviceFeatures{};
 
     VkDeviceCreateInfo deviceCreateInfo{};
+
     deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 
     deviceCreateInfo.queueCreateInfoCount =
         static_cast<uint32_t>(queueCreateInfos.size());
+
     deviceCreateInfo.pQueueCreateInfos = queueCreateInfos.data();
 
     deviceCreateInfo.pEnabledFeatures = &deviceFeatures;
 
     deviceCreateInfo.enabledExtensionCount =
         static_cast<uint32_t>(Config::DEVICE_EXTENSIONS.size());
+
     deviceCreateInfo.ppEnabledExtensionNames = Config::DEVICE_EXTENSIONS.data();
 
     const auto& layers = Config::VALIDATION_LAYERS;
@@ -403,7 +406,7 @@ class Application {
     );
 
     std::set<std::string> requiredExtensions(
-        Config ::DEVICE_EXTENSIONS.begin(), Config ::DEVICE_EXTENSIONS.end()
+        Config::DEVICE_EXTENSIONS.begin(), Config::DEVICE_EXTENSIONS.end()
     );
 
     for (const auto& extension : availableExtensions) {
@@ -424,6 +427,7 @@ class Application {
     if (extensionsSupported) {
       SwapChainSupportDetails swapChainSupport =
           querySwapChainSupport(device, surface);
+
       swapChainAdequate = !swapChainSupport.formats.empty() &&
                           !swapChainSupport.presentModes.empty();
     }
@@ -437,11 +441,14 @@ class Application {
 
     VkSurfaceFormatKHR surfaceFormat =
         chooseSwapSurfaceFormat(swapChainSupport.formats);
+
     VkPresentModeKHR presentMode =
         chooseSwapPresentMode(swapChainSupport.presentModes);
+
     VkExtent2D extent = chooseSwapExtent(swapChainSupport.capabilities);
 
     uint32_t imageCount = swapChainSupport.capabilities.minImageCount + 1;
+
     if (swapChainSupport.capabilities.maxImageCount > 0 &&
         imageCount > swapChainSupport.capabilities.maxImageCount) {
       imageCount = swapChainSupport.capabilities.maxImageCount;
@@ -459,7 +466,8 @@ class Application {
     createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
     QueueFamilyIndices indices =
-        QueueFamily ::findSuitableQueueFamilies(m_physicalDevice, m_surface);
+        QueueFamily::findSuitableQueueFamilies(m_physicalDevice, m_surface);
+
     uint32_t queueFamilyIndices[] = {
         indices.graphicsFamily.value(), indices.presentFamily.value()};
 

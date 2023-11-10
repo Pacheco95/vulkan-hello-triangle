@@ -125,12 +125,17 @@ class Application {
   std::vector<Semaphore> m_renderFinishedSemaphores;
   std::vector<Fence> m_inFlightFences;
 
+  bool framebufferResized = false;
+
   uint32_t m_currentFrame = 0;
 
   void initWindow() {
     m_window = std::make_unique<Window>(
         Config::WINDOW_WIDTH, Config::WINDOW_HEIGHT, Config::WINDOW_TITLE
     );
+
+    glfwSetWindowUserPointer(*m_window, this);
+    glfwSetFramebufferSizeCallback(*m_window, framebufferResizeCallback);
   }
 
   void initVulkan() {
@@ -160,16 +165,16 @@ class Application {
   }
 
   void cleanup() {
+    cleanupSwapChain();
+
     m_renderFinishedSemaphores.clear();
     m_imageAvailableSemaphores.clear();
     m_inFlightFences.clear();
     vkDestroyCommandPool(*m_device, m_commandPool, nullptr);
-    m_swapChainFrameBuffers.clear();
+
     m_graphicsPipeline.reset();
     m_pipelineLayout.reset();
     m_renderPass.reset();
-    m_swapChainImageViews.clear();
-    m_swapChain.reset();
     m_device.reset();
     m_validationLayer.reset();
     vkDestroySurfaceKHR(*m_instance, m_surface, nullptr);
@@ -794,10 +799,9 @@ class Application {
         m_renderFinishedSemaphores[m_currentFrame];
 
     vkWaitForFences(device, 1, &inFlightFence, VK_TRUE, UINT64_MAX);
-    vkResetFences(device, 1, &inFlightFence);
 
     uint32_t imageIndex;
-    vkAcquireNextImageKHR(
+    VkResult result = vkAcquireNextImageKHR(
         device,
         swapChain,
         UINT64_MAX,
@@ -805,6 +809,15 @@ class Application {
         VK_NULL_HANDLE,
         &imageIndex
     );
+
+    if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+      recreateSwapChain();
+      return;
+    } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+      ABORT_ON_FAIL(result, "Failed to acquire swap chain image");
+    }
+
+    vkResetFences(device, 1, &inFlightFence);
 
     vkResetCommandBuffer(
         commandBuffer,
@@ -846,7 +859,47 @@ class Application {
 
     presentInfo.pImageIndices = &imageIndex;
 
-    vkQueuePresentKHR(m_presentQueue, &presentInfo);
+    result = vkQueuePresentKHR(m_presentQueue, &presentInfo);
+
+    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR ||
+        framebufferResized) {
+      framebufferResized = false;
+      recreateSwapChain();
+    } else if (result != VK_SUCCESS) {
+      ABORT_ON_FAIL(result, "Failed to present swap chain image");
+    }
+  }
+
+  void cleanupSwapChain() {
+    m_swapChainFrameBuffers.clear();
+    m_swapChainImageViews.clear();
+    m_swapChain.reset();
+  }
+
+  void recreateSwapChain() {
+    int width, height;
+    glfwGetFramebufferSize(*m_window, &width, &height);
+    while (width == 0 || height == 0) {
+      glfwGetFramebufferSize(*m_window, &width, &height);
+      glfwWaitEvents();
+    }
+
+    vkDeviceWaitIdle(*m_device);
+
+    cleanupSwapChain();
+
+    createSwapChain();
+    createImageViews();
+    createFrameBuffers();
+  }
+
+  static void framebufferResizeCallback(
+      GLFWwindow* window,
+      [[maybe_unused]] int width,
+      [[maybe_unused]] int height
+  ) {
+    auto app = reinterpret_cast<Application*>(glfwGetWindowUserPointer(window));
+    app->framebufferResized = true;
   }
 };
 

@@ -13,7 +13,6 @@ Window::Window(size_t width, size_t height, const std::string &title) {
   }
 
   glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-  glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
   m_window = glfwCreateWindow(
       static_cast<int>(width),

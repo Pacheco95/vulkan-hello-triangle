@@ -11,8 +11,8 @@
 #include "QueueFamily.hpp"
 #include "Utils.hpp"
 #include "ValidationLayer.hpp"
+#include "VkWrapper.hpp"
 #include "Window.hpp"
-#include "Wrapper.hpp"
 
 VKAPI_ATTR VkResult VKAPI_CALL createPipeline(
     VkDevice device,

@@ -1,10 +1,9 @@
-#ifndef WRAPPER_HPP
-#define WRAPPER_HPP
+#ifndef VK_WRAPPER_HPP
+#define VK_WRAPPER_HPP
 
 #include <vulkan/vulkan.h>
 
 #include <Abort.hpp>
-#include <regex>
 
 template <
     typename T,
@@ -18,7 +17,7 @@ template <
     )(VkDevice device, T src, const VkAllocationCallbacks* pAllocator)>
 class VkWrapper {
  public:
-  explicit VkWrapper(
+  VkWrapper(
       VkDevice device,
       const CreateInfo& createInfo,
       const VkAllocationCallbacks* allocator = nullptr
@@ -39,9 +38,11 @@ class VkWrapper {
     SPDLOG_DEBUG("Destroyed {}: {}", typeid(T).name(), fmt::ptr(m_handle));
   }
 
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "google-explicit-constructor"
   operator T() { return m_handle; }
-
   operator T() const { return m_handle; }
+#pragma clang diagnostic pop
 
  private:
   VkDevice m_device;
@@ -49,4 +50,4 @@ class VkWrapper {
   T m_handle;
 };
 
-#endif  // WRAPPER_HPP
+#endif  // VK_WRAPPER_HPP

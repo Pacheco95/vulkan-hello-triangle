@@ -516,8 +516,8 @@ class Application {
   }
 
   void createGraphicsPipeline() {
-    auto vertShaderCode = BinaryLoader::load("res/shaders/vert.spv");
-    auto fragShaderCode = BinaryLoader::load("res/shaders/frag.spv");
+    auto vertShaderCode = BinaryLoader::load("shaders/shader.vert.spv");
+    auto fragShaderCode = BinaryLoader::load("shaders/shader.frag.spv");
 
     ShaderModule vertShaderModule = createShaderModule(vertShaderCode);
     ShaderModule fragShaderModule = createShaderModule(fragShaderCode);

@@ -58,3 +58,33 @@ target_link_libraries(VulkanHelloTriangle
         Xrandr
         Xi
 )
+
+file(GLOB_RECURSE GLSL_SOURCE_FILES
+        "res/shaders/*.frag"
+        "res/shaders/*.vert"
+)
+
+foreach (GLSL ${GLSL_SOURCE_FILES})
+  get_filename_component(FILE_NAME ${GLSL} NAME)
+  set(SPIRV "${PROJECT_BINARY_DIR}/shaders/${FILE_NAME}.spv")
+  add_custom_command(
+          OUTPUT ${SPIRV}
+          COMMAND ${CMAKE_COMMAND} -E make_directory "${PROJECT_BINARY_DIR}/shaders/"
+          COMMAND glslc ${GLSL} -o ${SPIRV}
+          DEPENDS ${GLSL})
+  list(APPEND SPIRV_BINARY_FILES ${SPIRV})
+endforeach (GLSL)
+
+add_custom_target(
+        Shaders
+        DEPENDS ${SPIRV_BINARY_FILES}
+)
+
+add_dependencies(VulkanHelloTriangle Shaders)
+
+add_custom_command(TARGET VulkanHelloTriangle POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:VulkanHelloTriangle>/shaders/"
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${PROJECT_BINARY_DIR}/shaders"
+        "$<TARGET_FILE_DIR:VulkanHelloTriangle>/shaders"
+)

@@ -42,6 +42,8 @@ add_executable(VulkanHelloTriangle src/main.cpp
         src/engine/BinaryLoader.cpp
         src/engine/BinaryLoader.hpp
         src/engine/VkWrapper.hpp
+        src/engine/VulkanDoubleCallWrapper.hpp
+        src/engine/VulkanWrappers.hpp
 )
 
 target_link_libraries(VulkanHelloTriangle

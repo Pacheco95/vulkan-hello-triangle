@@ -12,75 +12,10 @@
 #include "Utils.hpp"
 #include "ValidationLayer.hpp"
 #include "VkWrapper.hpp"
+#include "VulkanDoubleCallWrapper.hpp"
+#include "VulkanWrappers.hpp"
 #include "Window.hpp"
 
-VKAPI_ATTR VkResult VKAPI_CALL createPipeline(
-    VkDevice device,
-    const VkGraphicsPipelineCreateInfo* pCreateInfos,
-    const VkAllocationCallbacks* pAllocator,
-    VkPipeline* pPipelines
-) {
-  return vkCreateGraphicsPipelines(
-      device, VK_NULL_HANDLE, 1, pCreateInfos, pAllocator, pPipelines
-  );
-}
-
-using ImageView = VkWrapper<
-    VkImageView,
-    VkImageViewCreateInfo,
-    vkCreateImageView,
-    vkDestroyImageView>;
-
-using FrameBuffer = VkWrapper<
-    VkFramebuffer,
-    VkFramebufferCreateInfo,
-    vkCreateFramebuffer,
-    vkDestroyFramebuffer>;
-
-using RenderPass = VkWrapper<
-    VkRenderPass,
-    VkRenderPassCreateInfo,
-    vkCreateRenderPass,
-    vkDestroyRenderPass>;
-
-using Semaphore = VkWrapper<
-    VkSemaphore,
-    VkSemaphoreCreateInfo,
-    vkCreateSemaphore,
-    vkDestroySemaphore>;
-
-using ShaderModule = VkWrapper<
-    VkShaderModule,
-    VkShaderModuleCreateInfo,
-    vkCreateShaderModule,
-    vkDestroyShaderModule>;
-
-using SwapChain = VkWrapper<
-    VkSwapchainKHR,
-    VkSwapchainCreateInfoKHR,
-    vkCreateSwapchainKHR,
-    vkDestroySwapchainKHR>;
-
-using Fence =
-    VkWrapper<VkFence, VkFenceCreateInfo, vkCreateFence, vkDestroyFence>;
-
-using PipelineLayout = VkWrapper<
-    VkPipelineLayout,
-    VkPipelineLayoutCreateInfo,
-    vkCreatePipelineLayout,
-    vkDestroyPipelineLayout>;
-
-using GraphicsPipeline = VkWrapper<
-    VkPipeline,
-    VkGraphicsPipelineCreateInfo,
-    createPipeline,
-    vkDestroyPipeline>;
-
-using CommandPool = VkWrapper<
-    VkCommandPool,
-    VkCommandPoolCreateInfo,
-    vkCreateCommandPool,
-    vkDestroyCommandPool>;
 
 namespace app {
 using namespace engine;
@@ -351,8 +286,7 @@ class Application {
       deviceCreateInfo.ppEnabledLayerNames = layers.data();
     }
 
-    m_device =
-        std::make_unique<Device>(m_physicalDevice, deviceCreateInfo, nullptr);
+    m_device = std::make_unique<Device>(m_physicalDevice, deviceCreateInfo);
 
     m_graphicsQueue = m_device->getQueue(indices.graphicsFamily.value());
     m_presentQueue = m_device->getQueue(indices.presentFamily.value());
@@ -367,43 +301,18 @@ class Application {
         device, surface, &details.capabilities
     );
 
-    uint32_t formatCount;
-    vkGetPhysicalDeviceSurfaceFormatsKHR(
-        device, surface, &formatCount, nullptr
-    );
+    details.formats =
+        vkCall(vkGetPhysicalDeviceSurfaceFormatsKHR, device, surface);
 
-    if (formatCount != 0) {
-      details.formats.resize(formatCount);
-      vkGetPhysicalDeviceSurfaceFormatsKHR(
-          device, surface, &formatCount, details.formats.data()
-      );
-    }
-
-    uint32_t presentModeCount;
-    vkGetPhysicalDeviceSurfacePresentModesKHR(
-        device, surface, &presentModeCount, nullptr
-    );
-
-    if (presentModeCount != 0) {
-      details.presentModes.resize(presentModeCount);
-      vkGetPhysicalDeviceSurfacePresentModesKHR(
-          device, surface, &presentModeCount, details.presentModes.data()
-      );
-    }
+    details.presentModes =
+        vkCall(vkGetPhysicalDeviceSurfacePresentModesKHR, device, surface);
 
     return details;
   }
 
   static bool checkDeviceExtensionSupport(VkPhysicalDevice device) {
-    uint32_t extensionCount;
-    vkEnumerateDeviceExtensionProperties(
-        device, nullptr, &extensionCount, nullptr
-    );
-
-    std::vector<VkExtensionProperties> availableExtensions(extensionCount);
-    vkEnumerateDeviceExtensionProperties(
-        device, nullptr, &extensionCount, availableExtensions.data()
-    );
+    std::vector availableExtensions =
+        vkCall(vkEnumerateDeviceExtensionProperties, device, nullptr);
 
     std::set<std::string> requiredExtensions(
         Config::DEVICE_EXTENSIONS.begin(), Config::DEVICE_EXTENSIONS.end()
@@ -486,13 +395,10 @@ class Application {
 
     createInfo.oldSwapchain = VK_NULL_HANDLE;
 
-    m_swapChain = std::make_unique<SwapChain>(*m_device, createInfo, nullptr);
+    m_swapChain = std::make_unique<SwapChain>(*m_device, createInfo);
 
-    vkGetSwapchainImagesKHR(*m_device, *m_swapChain, &imageCount, nullptr);
-    m_swapChainImages.resize(imageCount);
-    vkGetSwapchainImagesKHR(
-        *m_device, *m_swapChain, &imageCount, m_swapChainImages.data()
-    );
+    m_swapChainImages =
+        vkCall(vkGetSwapchainImagesKHR, *m_device, *m_swapChain);
 
     SPDLOG_DEBUG("Got {} swap chain images", m_swapChainImages.size());
 
@@ -529,7 +435,7 @@ class Application {
     createInfo.codeSize = code.size();
     createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
 
-    ShaderModule module(*m_device, createInfo, nullptr);
+    ShaderModule module(*m_device, createInfo);
     return module;
   }
 
@@ -560,8 +466,7 @@ class Application {
     renderPassInfo.subpassCount = 1;
     renderPassInfo.pSubpasses = &subpass;
 
-    m_renderPass =
-        std::make_unique<RenderPass>(*m_device, renderPassInfo, nullptr);
+    m_renderPass = std::make_unique<RenderPass>(*m_device, renderPassInfo);
   }
 
   void createGraphicsPipeline() {
@@ -653,9 +558,8 @@ class Application {
     pipelineLayoutInfo.setLayoutCount = 0;
     pipelineLayoutInfo.pushConstantRangeCount = 0;
 
-    m_pipelineLayout = std::make_unique<PipelineLayout>(
-        *m_device, pipelineLayoutInfo, nullptr
-    );
+    m_pipelineLayout =
+        std::make_unique<PipelineLayout>(*m_device, pipelineLayoutInfo);
 
     VkGraphicsPipelineCreateInfo pipelineInfo{};
     pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -674,7 +578,7 @@ class Application {
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
     m_graphicsPipeline =
-        std::make_unique<GraphicsPipeline>(*m_device, pipelineInfo, nullptr);
+        std::make_unique<GraphicsPipeline>(*m_device, pipelineInfo);
   }
 
   void createFrameBuffers() {
@@ -890,6 +794,7 @@ class Application {
   void recreateSwapChain() {
     int width, height;
     glfwGetFramebufferSize(*m_window, &width, &height);
+
     while (width == 0 || height == 0) {
       glfwGetFramebufferSize(*m_window, &width, &height);
       glfwWaitEvents();

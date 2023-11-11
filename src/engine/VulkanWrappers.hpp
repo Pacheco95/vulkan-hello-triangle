@@ -79,4 +79,13 @@ using CommandPool = VkWrapper<
     vkCreateCommandPool,
     vkDestroyCommandPool>;
 
+using Buffer =
+    VkWrapper<VkBuffer, VkBufferCreateInfo, vkCreateBuffer, vkDestroyBuffer>;
+
+using DeviceMemory = VkWrapper<
+    VkDeviceMemory,
+    VkMemoryAllocateInfo,
+    vkAllocateMemory,
+    vkFreeMemory>;
+
 #endif  // VULKAN_WRAPPERS_HPP

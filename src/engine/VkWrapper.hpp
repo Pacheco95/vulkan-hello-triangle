@@ -38,6 +38,8 @@ class VkWrapper {
     SPDLOG_DEBUG("Destroyed {}: {}", typeid(T).name(), fmt::ptr(m_handle));
   }
 
+  const T& getHandle() const { return m_handle; }
+
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "google-explicit-constructor"
   operator T() { return m_handle; }

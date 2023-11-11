@@ -1,8 +1,14 @@
 #include <algorithm>
+#include <chrono>
 #include <glm/glm.hpp>
 #include <memory>
 #include <set>
 #include <sstream>
+
+
+#define GLM_FORCE_RADIANS
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 #include "BinaryLoader.hpp"
 #include "Config.hpp"
@@ -17,7 +23,6 @@
 #include "VulkanWrappers.hpp"
 #include "Window.hpp"
 
-
 namespace app {
 using namespace engine;
 
@@ -25,6 +30,12 @@ struct SwapChainSupportDetails {
   VkSurfaceCapabilitiesKHR capabilities{};
   std::vector<VkSurfaceFormatKHR> formats{};
   std::vector<VkPresentModeKHR> presentModes{};
+};
+
+struct UniformBufferObject {
+  glm::mat4 model;
+  glm::mat4 view;
+  glm::mat4 proj;
 };
 
 struct Vertex {
@@ -59,11 +70,12 @@ struct Vertex {
 };
 
 const std::vector<Vertex> VERTICES = {
-    {{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-    {{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
-    {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}};
+    {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+    {{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
+    {{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
+    {{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}};
 
-const std::vector<uint16_t> INDICES = {0, 1, 2};
+const std::vector<uint16_t> INDICES = {0, 1, 2, 2, 3, 0};
 
 class Application {
  public:
@@ -93,6 +105,9 @@ class Application {
   VkSurfaceKHR m_surface;
 
   std::unique_ptr<RenderPass> m_renderPass;
+  std::unique_ptr<DescriptorPool> m_descriptorPool;
+  std::vector<VkDescriptorSet> m_descriptorSets;
+  std::unique_ptr<DescriptorSetLayout> m_descriptorSetLayout;
   std::unique_ptr<PipelineLayout> m_pipelineLayout;
   std::unique_ptr<GraphicsPipeline> m_graphicsPipeline;
 
@@ -114,6 +129,10 @@ class Application {
   std::unique_ptr<Buffer> m_indexBuffer;
   std::unique_ptr<DeviceMemory> m_indexBufferMemory;
 
+  std::vector<std::unique_ptr<Buffer>> m_uniformBuffers;
+  std::vector<std::unique_ptr<DeviceMemory>> m_uniformBuffersMemory;
+  std::vector<void*> m_uniformBuffersMapped;
+
   void initWindow() {
     m_window = std::make_unique<Window>(
         Config::WINDOW_WIDTH, Config::WINDOW_HEIGHT, Config::WINDOW_TITLE
@@ -132,11 +151,15 @@ class Application {
     createSwapChain();
     createImageViews();
     createRenderPass();
+    createDescriptorSetLayout();
     createGraphicsPipeline();
     createFrameBuffers();
     createCommandPool();
     createVertexBuffer();
     createIndexBuffer();
+    createUniformBuffers();
+    createDescriptorPool();
+    createDescriptorSets();
     createCommandBuffers();
     createSyncObjects();
   }
@@ -153,6 +176,14 @@ class Application {
 
   void cleanup() {
     cleanupSwapChain();
+
+    m_uniformBuffers.clear();
+    m_uniformBuffersMemory.clear();
+
+    m_descriptorPool.reset();
+    m_descriptorSetLayout.reset();
+
+    m_descriptorSetLayout.reset();
 
     m_graphicsPipeline.reset();
     m_pipelineLayout.reset();
@@ -580,7 +611,7 @@ class Application {
     rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
     rasterizer.lineWidth = 1.0f;
     rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
-    rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
+    rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
     rasterizer.depthBiasEnable = VK_FALSE;
 
     VkPipelineMultisampleStateCreateInfo multisampling{};
@@ -617,8 +648,8 @@ class Application {
 
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    pipelineLayoutInfo.setLayoutCount = 0;
-    pipelineLayoutInfo.pushConstantRangeCount = 0;
+    pipelineLayoutInfo.setLayoutCount = 1;
+    pipelineLayoutInfo.pSetLayouts = &m_descriptorSetLayout->getHandle();
 
     m_pipelineLayout =
         std::make_unique<PipelineLayout>(*m_device, pipelineLayoutInfo);
@@ -735,6 +766,85 @@ class Application {
     copyBuffer(stagingBuffer, m_indexBuffer, bufferSize);
   }
 
+  void createUniformBuffers() {
+    VkDeviceSize bufferSize = sizeof(UniformBufferObject);
+
+    m_uniformBuffers.resize(Config::MAX_FRAMES_IN_FLIGHT);
+    m_uniformBuffersMemory.resize(Config::MAX_FRAMES_IN_FLIGHT);
+    m_uniformBuffersMapped.resize(Config::MAX_FRAMES_IN_FLIGHT);
+
+    for (size_t i = 0; i < Config::MAX_FRAMES_IN_FLIGHT; i++) {
+      createBuffer(
+          bufferSize,
+          VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+          VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+              VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+          m_uniformBuffers[i],
+          m_uniformBuffersMemory[i]
+      );
+
+      vkMapMemory(
+          *m_device,
+          *m_uniformBuffersMemory[i],
+          0,
+          bufferSize,
+          0,
+          &m_uniformBuffersMapped[i]
+      );
+    }
+  }
+
+  void createDescriptorPool() {
+    VkDescriptorPoolSize poolSize{};
+    poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    poolSize.descriptorCount =
+        static_cast<uint32_t>(Config::MAX_FRAMES_IN_FLIGHT);
+
+    VkDescriptorPoolCreateInfo poolInfo{};
+    poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+    poolInfo.poolSizeCount = 1;
+    poolInfo.pPoolSizes = &poolSize;
+    poolInfo.maxSets = static_cast<uint32_t>(Config::MAX_FRAMES_IN_FLIGHT);
+
+    m_descriptorPool = std::make_unique<DescriptorPool>(*m_device, poolInfo);
+  }
+
+  void createDescriptorSets() {
+    std::vector<VkDescriptorSetLayout> layouts(
+        Config::MAX_FRAMES_IN_FLIGHT, *m_descriptorSetLayout
+    );
+    VkDescriptorSetAllocateInfo allocInfo{};
+    allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    allocInfo.descriptorPool = *m_descriptorPool;
+    allocInfo.descriptorSetCount =
+        static_cast<uint32_t>(Config::MAX_FRAMES_IN_FLIGHT);
+    allocInfo.pSetLayouts = layouts.data();
+
+    m_descriptorSets.resize(Config::MAX_FRAMES_IN_FLIGHT);
+    if (vkAllocateDescriptorSets(
+            *m_device, &allocInfo, m_descriptorSets.data()
+        ) != VK_SUCCESS) {
+      throw std::runtime_error("failed to allocate descriptor sets!");
+    }
+
+    for (size_t i = 0; i < Config::MAX_FRAMES_IN_FLIGHT; i++) {
+      VkDescriptorBufferInfo bufferInfo{};
+      bufferInfo.buffer = *m_uniformBuffers[i];
+      bufferInfo.offset = 0;
+      bufferInfo.range = sizeof(UniformBufferObject);
+
+      VkWriteDescriptorSet descriptorWrite{};
+      descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+      descriptorWrite.dstSet = m_descriptorSets[i];
+      descriptorWrite.dstBinding = 0;
+      descriptorWrite.dstArrayElement = 0;
+      descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+      descriptorWrite.descriptorCount = 1;
+      descriptorWrite.pBufferInfo = &bufferInfo;
+
+      vkUpdateDescriptorSets(*m_device, 1, &descriptorWrite, 0, nullptr);
+    }
+  }
 
   void createBuffer(
       VkDeviceSize size,
@@ -886,6 +996,17 @@ class Application {
         commandBuffer, *m_indexBuffer, 0, VK_INDEX_TYPE_UINT16
     );
 
+    vkCmdBindDescriptorSets(
+        commandBuffer,
+        VK_PIPELINE_BIND_POINT_GRAPHICS,
+        *m_pipelineLayout,
+        0,
+        1,
+        &m_descriptorSets[m_currentFrame],
+        0,
+        nullptr
+    );
+
     vkCmdDrawIndexed(
         commandBuffer, static_cast<uint32_t>(INDICES.size()), 1, 0, 0, 0
     );
@@ -946,6 +1067,8 @@ class Application {
     } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
       ABORT_ON_FAIL(result, "Failed to acquire swap chain image");
     }
+
+    updateUniformBuffer(m_currentFrame);
 
     vkResetFences(device, 1, &inFlightFence);
 
@@ -1031,6 +1154,55 @@ class Application {
   ) {
     auto app = reinterpret_cast<Application*>(glfwGetWindowUserPointer(window));
     app->m_framebufferResized = true;
+  }
+
+  void createDescriptorSetLayout() {
+    VkDescriptorSetLayoutBinding uboLayoutBinding{};
+    uboLayoutBinding.binding = 0;
+    uboLayoutBinding.descriptorCount = 1;
+    uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
+    VkDescriptorSetLayoutCreateInfo layoutInfo{};
+    layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    layoutInfo.bindingCount = 1;
+    layoutInfo.pBindings = &uboLayoutBinding;
+
+    m_descriptorSetLayout =
+        std::make_unique<DescriptorSetLayout>(*m_device, layoutInfo);
+  }
+
+  void updateUniformBuffer(uint32_t currentImage) {
+    using namespace std::chrono;
+
+    static auto startTime = high_resolution_clock::now();
+
+    auto now = high_resolution_clock::now();
+    float delta = duration<float, seconds::period>(now - startTime).count();
+
+    UniformBufferObject ubo{};
+
+    ubo.model = glm::rotate(
+        glm::mat4(1.0f),
+        glm::radians(90.0f) * delta,
+        glm::vec3(0.0f, 0.0f, 1.0f)
+    );
+
+    const auto& eyePosition = glm::vec3(2.0f, 2.0f, 2.0f);
+    const auto& center = glm::vec3(0.0f, 0.0f, 0.0f);
+    const auto& up = glm::vec3(0.0f, 0.0f, 1.0f);
+    ubo.view = glm::lookAt(eyePosition, center, up);
+
+    float aspect =
+        (float)m_swapChainExtent.width / (float)m_swapChainExtent.height;
+
+    float fov = glm::radians(45.0f);
+    ubo.proj = glm::perspective(fov, aspect, 0.1f, 10.0f);
+
+    // Prevent image to be rendered upside down
+    ubo.proj[1][1] *= -1;
+
+    memcpy(m_uniformBuffersMapped[currentImage], &ubo, sizeof(ubo));
   }
 };
 

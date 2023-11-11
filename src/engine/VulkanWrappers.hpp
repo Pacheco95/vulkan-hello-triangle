@@ -5,6 +5,8 @@
 #ifndef VULKAN_WRAPPERS_HPP
 #define VULKAN_WRAPPERS_HPP
 
+#include "VkWrapper.hpp"
+
 /**
  * vkCreateGraphicsPipelines contains more parameters than other "VkCreate"
  * functions. In order to wrap vkCreateGraphicsPipelines using VkWrapper some
@@ -87,5 +89,17 @@ using DeviceMemory = VkWrapper<
     VkMemoryAllocateInfo,
     vkAllocateMemory,
     vkFreeMemory>;
+
+using DescriptorSetLayout = VkWrapper<
+    VkDescriptorSetLayout,
+    VkDescriptorSetLayoutCreateInfo,
+    vkCreateDescriptorSetLayout,
+    vkDestroyDescriptorSetLayout>;
+
+using DescriptorPool = VkWrapper<
+    VkDescriptorPool,
+    VkDescriptorPoolCreateInfo,
+    vkCreateDescriptorPool,
+    vkDestroyDescriptorPool>;
 
 #endif  // VULKAN_WRAPPERS_HPP

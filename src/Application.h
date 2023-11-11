@@ -58,10 +58,12 @@ struct Vertex {
   }
 };
 
-const std::vector<Vertex> vertices = {
+const std::vector<Vertex> VERTICES = {
     {{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
     {{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
     {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}};
+
+const std::vector<uint16_t> INDICES = {0, 1, 2};
 
 class Application {
  public:
@@ -109,6 +111,9 @@ class Application {
   std::unique_ptr<Buffer> m_vertexBuffer;
   std::unique_ptr<DeviceMemory> m_vertexBufferMemory;
 
+  std::unique_ptr<Buffer> m_indexBuffer;
+  std::unique_ptr<DeviceMemory> m_indexBufferMemory;
+
   void initWindow() {
     m_window = std::make_unique<Window>(
         Config::WINDOW_WIDTH, Config::WINDOW_HEIGHT, Config::WINDOW_TITLE
@@ -131,6 +136,7 @@ class Application {
     createFrameBuffers();
     createCommandPool();
     createVertexBuffer();
+    createIndexBuffer();
     createCommandBuffers();
     createSyncObjects();
   }
@@ -151,6 +157,9 @@ class Application {
     m_graphicsPipeline.reset();
     m_pipelineLayout.reset();
     m_renderPass.reset();
+
+    m_indexBuffer.reset();
+    m_indexBufferMemory.reset();
 
     m_vertexBuffer.reset();
     m_vertexBufferMemory.reset();
@@ -666,7 +675,7 @@ class Application {
   }
 
   void createVertexBuffer() {
-    VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
+    VkDeviceSize bufferSize = sizeof(VERTICES[0]) * VERTICES.size();
 
     std::unique_ptr<Buffer> stagingBuffer;
     std::unique_ptr<DeviceMemory> stagingBufferMemory;
@@ -682,7 +691,7 @@ class Application {
 
     void* data;
     vkMapMemory(*m_device, *stagingBufferMemory, 0, bufferSize, 0, &data);
-    memcpy(data, vertices.data(), (size_t)bufferSize);
+    memcpy(data, VERTICES.data(), (size_t)bufferSize);
     vkUnmapMemory(*m_device, *stagingBufferMemory);
 
     createBuffer(
@@ -695,6 +704,37 @@ class Application {
 
     copyBuffer(stagingBuffer, m_vertexBuffer, bufferSize);
   }
+
+  void createIndexBuffer() {
+    VkDeviceSize bufferSize = sizeof(INDICES[0]) * INDICES.size();
+
+    std::unique_ptr<Buffer> stagingBuffer;
+    std::unique_ptr<DeviceMemory> stagingBufferMemory;
+    createBuffer(
+        bufferSize,
+        VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+            VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+        stagingBuffer,
+        stagingBufferMemory
+    );
+
+    void* data;
+    vkMapMemory(*m_device, *stagingBufferMemory, 0, bufferSize, 0, &data);
+    memcpy(data, INDICES.data(), (size_t)bufferSize);
+    vkUnmapMemory(*m_device, *stagingBufferMemory);
+
+    createBuffer(
+        bufferSize,
+        VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+        m_indexBuffer,
+        m_indexBufferMemory
+    );
+
+    copyBuffer(stagingBuffer, m_indexBuffer, bufferSize);
+  }
+
 
   void createBuffer(
       VkDeviceSize size,
@@ -842,7 +882,13 @@ class Application {
     VkDeviceSize offsets[] = {0};
     vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
 
-    vkCmdDraw(commandBuffer, static_cast<uint32_t>(vertices.size()), 1, 0, 0);
+    vkCmdBindIndexBuffer(
+        commandBuffer, *m_indexBuffer, 0, VK_INDEX_TYPE_UINT16
+    );
+
+    vkCmdDrawIndexed(
+        commandBuffer, static_cast<uint32_t>(INDICES.size()), 1, 0, 0, 0
+    );
 
     vkCmdEndRenderPass(commandBuffer);
 

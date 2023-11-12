@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.26)
 project(VulkanHelloTriangle)
 
 set(CMAKE_CXX_STANDARD 17)
+add_compile_definitions(GLM_FORCE_RADIANS)
+add_compile_definitions(STB_IMAGE_IMPLEMENTATION)
 
 if (CMAKE_BUILD_TYPE STREQUAL "Release")
   add_compile_definitions(SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_WARN)
@@ -12,6 +14,7 @@ endif ()
 
 include_directories(
         src/engine
+        src/vendor
         external/spdlog/include
 )
 
@@ -69,10 +72,9 @@ file(GLOB_RECURSE GLSL_SOURCE_FILES
 
 foreach (GLSL ${GLSL_SOURCE_FILES})
   get_filename_component(FILE_NAME ${GLSL} NAME)
-  set(SPIRV "${PROJECT_BINARY_DIR}/${SHADERS_DIR}/${FILE_NAME}.spv")
+  set(SPIRV "${PROJECT_SOURCE_DIR}/${SHADERS_DIR}/${FILE_NAME}.spv")
   add_custom_command(
           OUTPUT ${SPIRV}
-          COMMAND ${CMAKE_COMMAND} -E make_directory "${PROJECT_BINARY_DIR}/${SHADERS_DIR}/"
           COMMAND glslc ${GLSL} -o ${SPIRV}
           DEPENDS ${GLSL})
   list(APPEND SPIRV_BINARY_FILES ${SPIRV})
@@ -84,10 +86,3 @@ add_custom_target(
 )
 
 add_dependencies(VulkanHelloTriangle Shaders)
-
-add_custom_command(TARGET VulkanHelloTriangle POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:VulkanHelloTriangle>/${SHADERS_DIR}/"
-        COMMAND ${CMAKE_COMMAND} -E copy_directory
-        "${PROJECT_BINARY_DIR}/${SHADERS_DIR}"
-        "$<TARGET_FILE_DIR:VulkanHelloTriangle>/${SHADERS_DIR}"
-)

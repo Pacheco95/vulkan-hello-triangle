@@ -105,4 +105,10 @@ using DescriptorPool = VkWrapper<
 using Image =
     VkWrapper<VkImage, VkImageCreateInfo, vkCreateImage, vkDestroyImage>;
 
+using Sampler = VkWrapper<
+    VkSampler,
+    VkSamplerCreateInfo,
+    vkCreateSampler,
+    vkDestroySampler>;
+
 #endif  // VULKAN_WRAPPERS_HPP

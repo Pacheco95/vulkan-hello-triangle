@@ -5,6 +5,9 @@ set(CMAKE_CXX_STANDARD 17)
 add_compile_definitions(GLM_FORCE_RADIANS)
 add_compile_definitions(STB_IMAGE_IMPLEMENTATION)
 
+# Force glm to generate perspective projection with 0.0 to 1.0 depth range instead of OpenGL -1.0 to 1.0
+add_compile_definitions(GLM_FORCE_DEPTH_ZERO_TO_ONE)
+
 if (CMAKE_BUILD_TYPE STREQUAL "Release")
   add_compile_definitions(SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_WARN)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2")

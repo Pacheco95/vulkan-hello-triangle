@@ -12,6 +12,7 @@
 #include "Config.hpp"
 #include "Device.hpp"
 #include "Instance.hpp"
+#include "ModelLoader.hpp"
 #include "PhysicalDevice.hpp"
 #include "QueueFamily.hpp"
 #include "Utils.hpp"
@@ -25,6 +26,9 @@
 namespace app {
 using namespace engine;
 
+constexpr char MODEL_PATH[] = "res/models/viking_room.obj";
+constexpr char TEXTURE_PATH[] = "res/textures/viking_room.png";
+
 struct SwapChainSupportDetails {
   VkSurfaceCapabilitiesKHR capabilities{};
   std::vector<VkSurfaceFormatKHR> formats{};
@@ -36,36 +40,6 @@ struct UniformBufferObject {
   glm::mat4 view;
   glm::mat4 proj;
 };
-
-static const std::vector<Vertex> VERTICES = {
-    // Upper plane
-    {{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
-    {{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
-    {{0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
-    {{-0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
-
-    // Bottom plane
-    {{-0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
-    {{0.5f, -0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
-    {{0.5f, 0.5f, -0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
-    {{-0.5f, 0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}};
-
-static const std::vector<uint16_t> INDICES = {
-    // Upper plane
-    0,
-    1,
-    2,
-    2,
-    3,
-    0,
-
-    // Bottom plane
-    4,
-    5,
-    6,
-    6,
-    7,
-    4};
 
 class Application {
  public:
@@ -113,6 +87,8 @@ class Application {
 
   uint32_t m_currentFrame = 0;
 
+  std::vector<Vertex> m_vertices;
+  std::vector<uint32_t> m_indices;
   std::unique_ptr<Buffer> m_vertexBuffer;
   std::unique_ptr<DeviceMemory> m_vertexBufferMemory;
 
@@ -159,6 +135,7 @@ class Application {
     createTextureImage();
     createTextureImageView();
     createTextureSampler();
+    loadModel();
     createVertexBuffer();
     createIndexBuffer();
     createUniformBuffers();
@@ -338,13 +315,14 @@ class Application {
   }
 
   void createLogicalDevice() {
-    QueueFamilyIndices indices =
+    QueueFamilyIndices familyIndices =
         QueueFamily::findSuitableQueueFamilies(m_physicalDevice, m_surface);
 
     std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
 
     std::set<uint32_t> uniqueQueueFamilies = {
-        indices.graphicsFamily.value(), indices.presentFamily.value()};
+        familyIndices.graphicsFamily.value(),
+        familyIndices.presentFamily.value()};
 
     float queuePriority = 1.0f;
 
@@ -385,8 +363,8 @@ class Application {
 
     m_device = std::make_unique<Device>(m_physicalDevice, deviceCreateInfo);
 
-    m_graphicsQueue = m_device->getQueue(indices.graphicsFamily.value());
-    m_presentQueue = m_device->getQueue(indices.presentFamily.value());
+    m_graphicsQueue = m_device->getQueue(familyIndices.graphicsFamily.value());
+    m_presentQueue = m_device->getQueue(familyIndices.presentFamily.value());
   }
 
   static SwapChainSupportDetails querySwapChainSupport(
@@ -475,13 +453,14 @@ class Application {
     createInfo.imageArrayLayers = 1;
     createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-    QueueFamilyIndices indices =
+    QueueFamilyIndices familyIndices =
         QueueFamily::findSuitableQueueFamilies(m_physicalDevice, m_surface);
 
     uint32_t queueFamilyIndices[] = {
-        indices.graphicsFamily.value(), indices.presentFamily.value()};
+        familyIndices.graphicsFamily.value(),
+        familyIndices.presentFamily.value()};
 
-    if (indices.graphicsFamily != indices.presentFamily) {
+    if (familyIndices.graphicsFamily != familyIndices.presentFamily) {
       createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
       createInfo.queueFamilyIndexCount = 2;
       createInfo.pQueueFamilyIndices = queueFamilyIndices;
@@ -845,11 +824,7 @@ class Application {
   void createTextureImage() {
     int texWidth, texHeight, texChannels;
     stbi_uc* pixels = stbi_load(
-        "res/textures/texture.jpg",
-        &texWidth,
-        &texHeight,
-        &texChannels,
-        STBI_rgb_alpha
+        TEXTURE_PATH, &texWidth, &texHeight, &texChannels, STBI_rgb_alpha
     );
     VkDeviceSize imageSize = texWidth * texHeight * 4;
 
@@ -999,8 +974,10 @@ class Application {
     m_textureSampler = std::make_unique<Sampler>(*m_device, samplerInfo);
   }
 
+  void loadModel() { ModelLoader::loadObj(MODEL_PATH, m_vertices, m_indices); }
+
   void createVertexBuffer() {
-    VkDeviceSize bufferSize = sizeof(VERTICES[0]) * VERTICES.size();
+    VkDeviceSize bufferSize = sizeof(m_vertices[0]) * m_vertices.size();
 
     std::unique_ptr<Buffer> stagingBuffer;
     std::unique_ptr<DeviceMemory> stagingBufferMemory;
@@ -1016,7 +993,7 @@ class Application {
 
     void* data;
     vkMapMemory(*m_device, *stagingBufferMemory, 0, bufferSize, 0, &data);
-    memcpy(data, VERTICES.data(), (size_t)bufferSize);
+    memcpy(data, m_vertices.data(), (size_t)bufferSize);
     vkUnmapMemory(*m_device, *stagingBufferMemory);
 
     createBuffer(
@@ -1031,7 +1008,7 @@ class Application {
   }
 
   void createIndexBuffer() {
-    VkDeviceSize bufferSize = sizeof(INDICES[0]) * INDICES.size();
+    VkDeviceSize bufferSize = sizeof(m_indices[0]) * m_indices.size();
 
     std::unique_ptr<Buffer> stagingBuffer;
     std::unique_ptr<DeviceMemory> stagingBufferMemory;
@@ -1046,7 +1023,7 @@ class Application {
 
     void* data;
     vkMapMemory(*m_device, *stagingBufferMemory, 0, bufferSize, 0, &data);
-    memcpy(data, INDICES.data(), (size_t)bufferSize);
+    memcpy(data, m_indices.data(), (size_t)bufferSize);
     vkUnmapMemory(*m_device, *stagingBufferMemory);
 
     createBuffer(
@@ -1294,7 +1271,7 @@ class Application {
     vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
 
     vkCmdBindIndexBuffer(
-        commandBuffer, *m_indexBuffer, 0, VK_INDEX_TYPE_UINT16
+        commandBuffer, *m_indexBuffer, 0, VK_INDEX_TYPE_UINT32
     );
 
     vkCmdBindDescriptorSets(
@@ -1309,7 +1286,7 @@ class Application {
     );
 
     vkCmdDrawIndexed(
-        commandBuffer, static_cast<uint32_t>(INDICES.size()), 1, 0, 0, 0
+        commandBuffer, static_cast<uint32_t>(m_indices.size()), 1, 0, 0, 0
     );
 
     vkCmdEndRenderPass(commandBuffer);

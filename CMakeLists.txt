@@ -3,10 +3,15 @@ project(VulkanHelloTriangle)
 
 set(CMAKE_CXX_STANDARD 17)
 add_compile_definitions(GLM_FORCE_RADIANS)
-add_compile_definitions(STB_IMAGE_IMPLEMENTATION)
+
+# Use glm hash functions
+add_compile_definitions(GLM_ENABLE_EXPERIMENTAL)
 
 # Force glm to generate perspective projection with 0.0 to 1.0 depth range instead of OpenGL -1.0 to 1.0
 add_compile_definitions(GLM_FORCE_DEPTH_ZERO_TO_ONE)
+
+add_compile_definitions(STB_IMAGE_IMPLEMENTATION)
+add_compile_definitions(TINYOBJLOADER_IMPLEMENTATION)
 
 if (CMAKE_BUILD_TYPE STREQUAL "Release")
   add_compile_definitions(SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_WARN)
@@ -54,6 +59,9 @@ add_executable(VulkanHelloTriangle src/main.cpp
         src/engine/VulkanDoubleCallWrapper.hpp
         src/engine/VulkanWrappers.hpp
         src/engine/Vertex.hpp
+        src/vendor/tiny_obj_loader.h
+        src/engine/ModelLoader.cpp
+        src/engine/ModelLoader.hpp
 )
 
 target_link_libraries(VulkanHelloTriangle

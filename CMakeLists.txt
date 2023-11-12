@@ -50,6 +50,7 @@ add_executable(VulkanHelloTriangle src/main.cpp
         src/engine/VkWrapper.hpp
         src/engine/VulkanDoubleCallWrapper.hpp
         src/engine/VulkanWrappers.hpp
+        src/engine/Vertex.hpp
 )
 
 target_link_libraries(VulkanHelloTriangle

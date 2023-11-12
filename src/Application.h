@@ -16,6 +16,7 @@
 #include "QueueFamily.hpp"
 #include "Utils.hpp"
 #include "ValidationLayer.hpp"
+#include "Vertex.hpp"
 #include "VkWrapper.hpp"
 #include "VulkanDoubleCallWrapper.hpp"
 #include "VulkanWrappers.hpp"
@@ -36,50 +37,13 @@ struct UniformBufferObject {
   glm::mat4 proj;
 };
 
-struct Vertex {
-  glm::vec2 pos;
-  glm::vec3 color;
-  glm::vec2 texCoord;
-
-  static constexpr VkVertexInputBindingDescription getBindingDescription() {
-    VkVertexInputBindingDescription bindingDescription{};
-    bindingDescription.binding = 0;
-    bindingDescription.stride = sizeof(Vertex);
-    bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-
-    return bindingDescription;
-  }
-
-  static constexpr std::array<VkVertexInputAttributeDescription, 3>
-  getAttributeDescriptions() {
-    std::array<VkVertexInputAttributeDescription, 3> attributeDescriptions{};
-
-    attributeDescriptions[0].binding = 0;
-    attributeDescriptions[0].location = 0;
-    attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
-    attributeDescriptions[0].offset = offsetof(Vertex, pos);
-
-    attributeDescriptions[1].binding = 0;
-    attributeDescriptions[1].location = 1;
-    attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-    attributeDescriptions[1].offset = offsetof(Vertex, color);
-
-    attributeDescriptions[2].binding = 0;
-    attributeDescriptions[2].location = 2;
-    attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
-    attributeDescriptions[2].offset = offsetof(Vertex, texCoord);
-
-    return attributeDescriptions;
-  }
-};
-
-const std::vector<Vertex> VERTICES = {
+static const std::vector<Vertex> VERTICES = {
     {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
     {{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
     {{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
     {{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}};
 
-const std::vector<uint16_t> INDICES = {0, 1, 2, 2, 3, 0};
+static const std::vector<uint16_t> INDICES = {0, 1, 2, 2, 3, 0};
 
 class Application {
  public:
@@ -140,8 +104,8 @@ class Application {
   std::unique_ptr<Image> m_textureImage;
   std::unique_ptr<DeviceMemory> m_textureImageMemory;
 
-  std::unique_ptr<ImageView> textureImageView;
-  std::unique_ptr<Sampler> textureSampler;
+  std::unique_ptr<ImageView> m_textureImageView;
+  std::unique_ptr<Sampler> m_textureSampler;
 
   void initWindow() {
     m_window = std::make_unique<Window>(
@@ -190,8 +154,8 @@ class Application {
   void cleanup() {
     cleanupSwapChain();
 
-    textureSampler.reset();
-    textureImageView.reset();
+    m_textureSampler.reset();
+    m_textureImageView.reset();
 
     m_textureImage.reset();
     m_textureImageMemory.reset();
@@ -851,7 +815,7 @@ class Application {
   }
 
   void createTextureImageView() {
-    textureImageView = std::make_unique<ImageView>(
+    m_textureImageView = std::make_unique<ImageView>(
         createImageView(*m_textureImage, VK_FORMAT_R8G8B8A8_SRGB)
     );
   }
@@ -895,7 +859,7 @@ class Application {
     samplerInfo.minLod = 0.0f;
     samplerInfo.maxLod = 0.0f;
 
-    textureSampler = std::make_unique<Sampler>(*m_device, samplerInfo);
+    m_textureSampler = std::make_unique<Sampler>(*m_device, samplerInfo);
   }
 
   void createVertexBuffer() {
@@ -1034,8 +998,8 @@ class Application {
 
       VkDescriptorImageInfo imageInfo{};
       imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-      imageInfo.imageView = *textureImageView;
-      imageInfo.sampler = *textureSampler;
+      imageInfo.imageView = *m_textureImageView;
+      imageInfo.sampler = *m_textureSampler;
 
       std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
 

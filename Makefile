@@ -13,5 +13,6 @@ format:
 		-name "*.cpp" -o \
 		-name "*.hpp" -o \
 		-name "*.h" -o \
+		-name "*.inl" -o \
 		-name "*.vert" -o \
 		-name "*.frag" | xargs clang-format -i

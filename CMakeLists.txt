@@ -62,6 +62,10 @@ add_executable(VulkanHelloTriangle src/main.cpp
         src/vendor/tiny_obj_loader.h
         src/engine/ModelLoader.cpp
         src/engine/ModelLoader.hpp
+        src/engine/Time.inl
+        src/engine/Time.hpp
+        src/engine/Camera.cpp
+        src/engine/Camera.hpp
 )
 
 target_link_libraries(VulkanHelloTriangle

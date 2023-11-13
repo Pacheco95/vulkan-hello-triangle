@@ -9,12 +9,14 @@
 #include <sstream>
 
 #include "BinaryLoader.hpp"
+#include "Camera.hpp"
 #include "Config.hpp"
 #include "Device.hpp"
 #include "Instance.hpp"
 #include "ModelLoader.hpp"
 #include "PhysicalDevice.hpp"
 #include "QueueFamily.hpp"
+#include "Time.hpp"
 #include "Utils.hpp"
 #include "ValidationLayer.hpp"
 #include "Vertex.hpp"
@@ -46,6 +48,7 @@ class Application {
   void run() {
     initWindow();
     initVulkan();
+    initCamera();
     mainLoop();
     cleanup();
   }
@@ -109,6 +112,8 @@ class Application {
   std::unique_ptr<DeviceMemory> depthImageMemory;
   std::unique_ptr<ImageView> depthImageView;
 
+  std::unique_ptr<Camera> m_camera;
+
   void initWindow() {
     m_window = std::make_unique<Window>(
         Config::WINDOW_WIDTH, Config::WINDOW_HEIGHT, Config::WINDOW_TITLE
@@ -116,6 +121,7 @@ class Application {
 
     glfwSetWindowUserPointer(*m_window, this);
     glfwSetFramebufferSizeCallback(*m_window, framebufferResizeCallback);
+    glfwSetMouseButtonCallback(*m_window, mouseCallback);
   }
 
   void initVulkan() {
@@ -145,10 +151,15 @@ class Application {
     createSyncObjects();
   }
 
+  void initCamera() { m_camera = std::make_unique<Camera>(*m_window); }
+
   void mainLoop() {
+    Time time;
+
     while (m_window->isOpen()) {
       m_window->pollEvents();
       drawFrame();
+      m_camera->update(time.deltaTime());
       m_currentFrame = (m_currentFrame + 1) % Config::MAX_FRAMES_IN_FLIGHT;
     }
 
@@ -192,6 +203,8 @@ class Application {
     m_validationLayer.reset();
     vkDestroySurfaceKHR(*m_instance, m_surface, nullptr);
     m_instance.reset();
+
+    m_camera.reset();
     m_window.reset();
   }
 
@@ -1438,6 +1451,20 @@ class Application {
     app->m_framebufferResized = true;
   }
 
+  static void mouseCallback(
+      GLFWwindow* window, int button, int action, [[maybe_unused]] int mods
+  ) {
+    auto app = reinterpret_cast<Application*>(glfwGetWindowUserPointer(window));
+    bool isCameraActive =
+        button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS;
+
+    app->m_camera->setActive(isCameraActive);
+    auto cursorState =
+        isCameraActive ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL;
+
+    glfwSetInputMode(*app->m_window, GLFW_CURSOR, cursorState);
+  }
+
   void createDescriptorSetLayout() {
     VkDescriptorSetLayoutBinding uboLayoutBinding{};
     uboLayoutBinding.binding = 0;
@@ -1465,30 +1492,14 @@ class Application {
   }
 
   void updateUniformBuffer(uint32_t currentImage) {
-    using namespace std::chrono;
-
-    static auto startTime = high_resolution_clock::now();
-
-    auto now = high_resolution_clock::now();
-    float delta = duration<float, seconds::period>(now - startTime).count();
-
-    UniformBufferObject ubo{};
-
-    ubo.model = glm::rotate(
-        glm::mat4(1.0f),
-        glm::radians(30.0f) * delta,
-        glm::vec3(0.0f, 0.0f, 1.0f)
-    );
-
-    const auto& eyePosition = glm::vec3(2.0f, 2.0f, 2.0f);
-    const auto& center = glm::vec3(0.0f, 0.0f, 0.0f);
-    const auto& up = glm::vec3(0.0f, 0.0f, 1.0f);
-    ubo.view = glm::lookAt(eyePosition, center, up);
-
     float aspect =
         (float)m_swapChainExtent.width / (float)m_swapChainExtent.height;
 
     float fov = glm::radians(45.0f);
+
+    UniformBufferObject ubo{};
+    ubo.model = glm::mat4(1.0f);
+    ubo.view = m_camera->getViewMatrix();
     ubo.proj = glm::perspective(fov, aspect, 0.1f, 10.0f);
 
     // Prevent image to be rendered upside down

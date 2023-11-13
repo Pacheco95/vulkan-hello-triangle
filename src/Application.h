@@ -109,9 +109,9 @@ class Application {
   std::unique_ptr<ImageView> m_textureImageView;
   std::unique_ptr<Sampler> m_textureSampler;
 
-  std::unique_ptr<Image> depthImage;
-  std::unique_ptr<DeviceMemory> depthImageMemory;
-  std::unique_ptr<ImageView> depthImageView;
+  std::unique_ptr<Image> m_depthImage;
+  std::unique_ptr<DeviceMemory> m_depthImageMemory;
+  std::unique_ptr<ImageView> m_depthImageView;
 
   std::unique_ptr<Camera> m_camera;
 
@@ -717,7 +717,7 @@ class Application {
 
     for (const auto& imageView : m_swapChainImageViews) {
       std::array<VkImageView, 2> attachments = {
-          imageView.getHandle(), *depthImageView};
+          imageView.getHandle(), *m_depthImageView};
 
       VkFramebufferCreateInfo framebufferInfo{};
       framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
@@ -784,13 +784,13 @@ class Application {
         VK_IMAGE_TILING_OPTIMAL,
         VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
         VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-        depthImage,
-        depthImageMemory
+        m_depthImage,
+        m_depthImageMemory
     );
 
-    depthImageView = std::make_unique<ImageView>(
-        createImageView(*depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, 1)
-    );
+    m_depthImageView = std::make_unique<ImageView>(createImageView(
+        *m_depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, 1
+    ));
   }
 
   VkFormat findSupportedFormat(
@@ -1576,9 +1576,9 @@ class Application {
   }
 
   void cleanupSwapChain() {
-    depthImageView.reset();
-    depthImage.reset();
-    depthImageMemory.reset();
+    m_depthImageView.reset();
+    m_depthImage.reset();
+    m_depthImageMemory.reset();
     m_swapChainFrameBuffers.clear();
     m_swapChainImageViews.clear();
     m_swapChain.reset();

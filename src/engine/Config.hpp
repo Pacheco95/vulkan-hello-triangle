@@ -5,6 +5,7 @@
 
 #include <array>
 #include <cstdint>
+#include <vector>
 
 #ifdef NDEBUG
 #define PREFIX "[Release]"
@@ -42,8 +43,7 @@ struct Config {
   static constexpr auto WINDOW_TITLE =
       PREFIX " " APPLICATION_NAME " " APP_VERSION_STRING;
 
-  static constexpr std::array<const char *, 1> VALIDATION_LAYERS{
-      "VK_LAYER_KHRONOS_validation"};
+  static const std::vector<const char *> VALIDATION_LAYERS;
 
   static constexpr std::array<const char *, 1> DEVICE_EXTENSIONS{
       VK_KHR_SWAPCHAIN_EXTENSION_NAME};

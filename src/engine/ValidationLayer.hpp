@@ -1,25 +1,26 @@
 #ifndef VALIDATION_LAYER_HPP
 #define VALIDATION_LAYER_HPP
 
-#include <vulkan/vulkan.h>
-
 #include <vector>
+#include <vulkan/vulkan.hpp>
 
 namespace engine {
 
 class ValidationLayer {
  public:
-  explicit ValidationLayer(VkInstance instance);
-  virtual ~ValidationLayer();
-  static bool checkValidationLayerSupport();
+  explicit ValidationLayer(vk::Instance& instance);
 
-  static void populateDebugMessengerCreateInfo(
-      VkDebugUtilsMessengerCreateInfoEXT& createInfo
+  virtual ~ValidationLayer();
+
+  static bool checkLayers(
+      std::vector<char const*> const& layers,
+      std::vector<vk::LayerProperties> const& properties
   );
 
  private:
-  VkInstance m_instance = VK_NULL_HANDLE;
-  VkDebugUtilsMessengerEXT m_debugMessenger = VK_NULL_HANDLE;
+  vk::Instance& m_instance;
+  vk::DebugUtilsMessengerEXT debugUtilsMessenger;
+
   void setupDebugMessenger();
 };
 

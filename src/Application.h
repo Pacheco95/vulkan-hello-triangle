@@ -7,6 +7,7 @@
 #include <memory>
 #include <set>
 #include <sstream>
+#include <vulkan/vulkan.hpp>
 
 #include "BinaryLoader.hpp"
 #include "Camera.hpp"
@@ -55,8 +56,10 @@ class Application {
 
  private:
   std::unique_ptr<Window> m_window;
-  std::unique_ptr<Instance> m_instance;
+  vk::Instance m_instance;
+
   std::unique_ptr<ValidationLayer> m_validationLayer;
+
   VkPhysicalDevice m_physicalDevice;
   std::unique_ptr<Device> m_device;
   VkQueue m_graphicsQueue;
@@ -208,66 +211,56 @@ class Application {
     m_commandPool.reset();
 
     m_device.reset();
+    vkDestroySurfaceKHR(m_instance, m_surface, nullptr);
+
     m_validationLayer.reset();
-    vkDestroySurfaceKHR(*m_instance, m_surface, nullptr);
-    m_instance.reset();
+    m_instance.destroy();
 
     m_camera.reset();
     m_window.reset();
   }
 
   void createInstance() {
-    if (Config::IS_VALIDATION_LAYERS_ENABLED &&
-        !ValidationLayer::checkValidationLayerSupport()) {
-      ABORT("Validation layers requested, but not available");
-    }
+    auto appInfo = vk::ApplicationInfo()
+                       .setPApplicationName(Config::APP_NAME)
+                       .setApplicationVersion(Config::APP_VERSION)
+                       .setPEngineName("No Engine")
+                       .setEngineVersion(VK_MAKE_API_VERSION(0, 1, 0, 0))
+                       .setApiVersion(VK_API_VERSION_1_0);
 
-    VkApplicationInfo appInfo{};
-    appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-    appInfo.pApplicationName = Config::APP_NAME;
-    appInfo.applicationVersion = Config::APP_VERSION;
-    appInfo.pEngineName = "No Engine";
-    appInfo.engineVersion = VK_MAKE_API_VERSION(0, 1, 0, 0);
-    appInfo.apiVersion = VK_API_VERSION_1_0;
 
-    VkInstanceCreateInfo createInfo{};
-    createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-    createInfo.pApplicationInfo = &appInfo;
+    const auto& extensionNames = Window::getRequiredExtensions();
 
-    auto extensions = Window::getRequiredExtensions();
-    createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
-    createInfo.ppEnabledExtensionNames = extensions.data();
+    vk::InstanceCreateInfo createInfo(
+        {}, &appInfo, Config::VALIDATION_LAYERS, extensionNames
+    );
 
-    VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
-
-    if (Config::IS_VALIDATION_LAYERS_ENABLED) {
-      const auto& layers = Config::VALIDATION_LAYERS;
-      createInfo.enabledLayerCount = static_cast<uint32_t>(layers.size());
-      createInfo.ppEnabledLayerNames = layers.data();
-
-      ValidationLayer::populateDebugMessengerCreateInfo(debugCreateInfo);
-      createInfo.pNext = &debugCreateInfo;
-    }
-
-    m_instance = std::make_unique<Instance>(createInfo);
+    m_instance = vk::createInstance(createInfo);
   }
 
   void setupDebugMessenger() {
-    if (Config::IS_VALIDATION_LAYERS_ENABLED) {
-      m_validationLayer = std::make_unique<ValidationLayer>(*m_instance);
+    m_validationLayer = std::make_unique<ValidationLayer>(m_instance);
+
+    std::vector<vk::LayerProperties> instanceLayerProperties =
+        vk::enumerateInstanceLayerProperties();
+
+    if (!m_validationLayer->checkLayers(
+            Config::VALIDATION_LAYERS, instanceLayerProperties
+        )) {
+      ABORT("Validation layers requested, but not available");
     }
   }
 
   void createSurface() {
     ABORT_ON_FAIL(
-        glfwCreateWindowSurface(*m_instance, *m_window, nullptr, &m_surface),
+        glfwCreateWindowSurface(m_instance, *m_window, nullptr, &m_surface),
         "Failed to create window surface"
     );
   }
 
   void pickPhysicalDevice() {
     std::vector<VkPhysicalDevice> devices =
-        PhysicalDevice::enumeratePhysicalDevices(*m_instance);
+        PhysicalDevice::enumeratePhysicalDevices(m_instance);
 
     for (const auto& device : devices) {
       if (isDeviceSuitable(device, m_surface)) {
@@ -882,11 +875,6 @@ class Application {
     );
 
     return optimalDepthFormat;
-  }
-
-  static bool hasStencilComponent(VkFormat format) {
-    return format == VK_FORMAT_D32_SFLOAT_S8_UINT ||
-           format == VK_FORMAT_D24_UNORM_S8_UINT;
   }
 
   void createTextureImage() {
@@ -1764,7 +1752,7 @@ class Application {
 
   void transitionImageLayout(
       VkImage image,
-      VkFormat format,
+      VkFormat /*format*/,
       VkImageLayout oldLayout,
       VkImageLayout newLayout,
       uint32_t mipLevels

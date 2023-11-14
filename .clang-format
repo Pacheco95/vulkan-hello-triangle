@@ -8,3 +8,4 @@ PackConstructorInitializers: CurrentLine
 BinPackArguments: false
 BinPackParameters: false
 AlignAfterOpenBracket: 'BlockIndent'
+PenaltyIndentedWhitespace: 1

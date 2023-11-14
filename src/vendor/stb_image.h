@@ -4997,18 +4997,18 @@ static const int stbi__zlength_base[31] = {
     3,  4,  5,  6,  7,  8,  9,  10,  11,  13,  15,  17,  19,  23, 27, 31,
     35, 43, 51, 59, 67, 83, 99, 115, 131, 163, 195, 227, 258, 0,  0};
 
-static const int stbi__zlength_extra[31] = {0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1,
-                                            1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4,
-                                            4, 4, 5, 5, 5, 5, 0, 0, 0};
+static const int stbi__zlength_extra[31] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2,
+    3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 0, 0, 0};
 
 static const int stbi__zdist_base[32] = {
     1,    2,    3,    4,    5,    7,     9,     13,    17,  25,   33,
     49,   65,   97,   129,  193,  257,   385,   513,   769, 1025, 1537,
     2049, 3073, 4097, 6145, 8193, 12289, 16385, 24577, 0,   0};
 
-static const int stbi__zdist_extra[32] = {0, 0, 0,  0,  1,  1,  2,  2,  3,  3,
-                                          4, 4, 5,  5,  6,  6,  7,  7,  8,  8,
-                                          9, 9, 10, 10, 11, 11, 12, 12, 13, 13};
+static const int stbi__zdist_extra[32] = {
+    0, 0, 0, 0, 1, 1, 2, 2,  3,  3,  4,  4,  5,  5,  6,
+    6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13};
 
 static int stbi__parse_huffman_block(stbi__zbuf *a) {
   char *zout = a->zout;
@@ -5614,9 +5614,9 @@ static int stbi__create_png_image_raw(
       // 8-bit path optimal at minimal cost for 1/2/4-bit png guarante byte
       // alignment, if width is not multiple of 8/4/2 we'll decode dummy
       // trailing data that will be skipped in the later loop
-      stbi_uc scale = (color == 0)
-                          ? stbi__depth_scale_table[depth]
-                          : 1;  // scale grayscale values to 0..255 range
+      stbi_uc scale =
+          (color == 0) ? stbi__depth_scale_table[depth]
+                       : 1;  // scale grayscale values to 0..255 range
 
       // note that the final byte might overshoot and write more data than
       // desired. we can allocate enough data that this never writes out of

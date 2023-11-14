@@ -221,12 +221,13 @@ class Application {
   }
 
   void createInstance() {
-    auto appInfo = vk::ApplicationInfo()
-                       .setPApplicationName(Config::APP_NAME)
-                       .setApplicationVersion(Config::APP_VERSION)
-                       .setPEngineName("No Engine")
-                       .setEngineVersion(VK_MAKE_API_VERSION(0, 1, 0, 0))
-                       .setApiVersion(VK_API_VERSION_1_0);
+    auto appInfo =
+        vk::ApplicationInfo()
+            .setPApplicationName(Config::APP_NAME)
+            .setApplicationVersion(Config::APP_VERSION)
+            .setPEngineName("No Engine")
+            .setEngineVersion(VK_MAKE_API_VERSION(0, 1, 0, 0))
+            .setApiVersion(VK_API_VERSION_1_0);
 
 
     const auto& extensionNames = Window::getRequiredExtensions();

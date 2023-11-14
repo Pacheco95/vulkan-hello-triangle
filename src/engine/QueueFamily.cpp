@@ -1,31 +1,30 @@
 #include "QueueFamily.hpp"
 
+#include <vulkan/vulkan.hpp>
+
 #include "PhysicalDevice.hpp"
 
-engine::QueueFamilyIndices engine::QueueFamily::findSuitableQueueFamilies(
-    VkPhysicalDevice device, VkSurfaceKHR surface
+engine::QueueFamilyIndices engine::QueueFamily::findIndices(
+    const vk::PhysicalDevice &device, const vk::SurfaceKHR &surface
 ) {
   QueueFamilyIndices indices;
 
-  int i = 0;
-  for (const auto& queueFamily :
-       PhysicalDevice::enumerateQueueFamilies(device)) {
-    if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
-      indices.graphicsFamily = i;
+  const auto &families = device.getQueueFamilyProperties();
+
+  for (int familyIndex = 0; familyIndex < families.size(); familyIndex++) {
+    const auto &props = families[familyIndex];
+
+    if (props.queueFlags & vk::QueueFlagBits::eGraphics) {
+      indices.graphicsFamily = familyIndex;
     }
 
-    VkBool32 presentSupport = false;
-    vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &presentSupport);
-
-    if (presentSupport) {
-      indices.presentFamily = i;
+    if (device.getSurfaceSupportKHR(familyIndex, surface)) {
+      indices.presentFamily = familyIndex;
     }
 
     if (indices.isComplete()) {
       break;
     }
-
-    i++;
   }
 
   return indices;

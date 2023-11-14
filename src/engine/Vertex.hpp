@@ -1,12 +1,11 @@
 #ifndef VERTEX_HPP
 #define VERTEX_HPP
 
-#include <vulkan/vulkan.h>
-
 #include <array>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/hash.hpp>
+#include <vulkan/vulkan.hpp>
 
 namespace engine {
 struct Vertex {
@@ -14,32 +13,32 @@ struct Vertex {
   glm::vec3 color;
   glm::vec2 texCoord;
 
-  static constexpr VkVertexInputBindingDescription getBindingDescription() {
-    VkVertexInputBindingDescription bindingDescription{};
+  static constexpr vk::VertexInputBindingDescription getBindingDescription() {
+    vk::VertexInputBindingDescription bindingDescription{};
     bindingDescription.binding = 0;
     bindingDescription.stride = sizeof(Vertex);
-    bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+    bindingDescription.inputRate = vk::VertexInputRate::eVertex;
 
     return bindingDescription;
   }
 
-  static constexpr std::array<VkVertexInputAttributeDescription, 3>
+  static constexpr std::array<vk::VertexInputAttributeDescription, 3>
   getAttributeDescriptions() {
-    std::array<VkVertexInputAttributeDescription, 3> attributeDescriptions{};
+    std::array<vk::VertexInputAttributeDescription, 3> attributeDescriptions{};
 
     attributeDescriptions[0].binding = 0;
     attributeDescriptions[0].location = 0;
-    attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
+    attributeDescriptions[0].format = vk::Format::eR32G32B32Sfloat;
     attributeDescriptions[0].offset = offsetof(Vertex, pos);
 
     attributeDescriptions[1].binding = 0;
     attributeDescriptions[1].location = 1;
-    attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+    attributeDescriptions[1].format = vk::Format::eR32G32B32Sfloat;
     attributeDescriptions[1].offset = offsetof(Vertex, color);
 
     attributeDescriptions[2].binding = 0;
     attributeDescriptions[2].location = 2;
-    attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
+    attributeDescriptions[2].format = vk::Format::eR32G32Sfloat;
     attributeDescriptions[2].offset = offsetof(Vertex, texCoord);
 
     return attributeDescriptions;

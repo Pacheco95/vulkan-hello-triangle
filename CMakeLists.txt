@@ -39,8 +39,6 @@ add_executable(VulkanHelloTriangle src/main.cpp
         src/engine/Config.hpp
         src/engine/Abort.hpp
         src/Application.h
-        src/engine/Instance.cpp
-        src/engine/Instance.hpp
         src/engine/Window.cpp
         src/engine/Window.hpp
         src/engine/ValidationLayer.cpp
@@ -51,13 +49,9 @@ add_executable(VulkanHelloTriangle src/main.cpp
         src/engine/Utils.hpp
         src/engine/QueueFamily.cpp
         src/engine/QueueFamily.hpp
-        src/engine/Device.cpp
-        src/engine/Device.hpp
         src/engine/BinaryLoader.cpp
         src/engine/BinaryLoader.hpp
-        src/engine/VkWrapper.hpp
         src/engine/VulkanDoubleCallWrapper.hpp
-        src/engine/VulkanWrappers.hpp
         src/engine/Vertex.hpp
         src/vendor/tiny_obj_loader.h
         src/engine/ModelLoader.cpp

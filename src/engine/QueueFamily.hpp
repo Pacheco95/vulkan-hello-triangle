@@ -1,9 +1,8 @@
 #ifndef QUEUE_FAMILY_HPP
 #define QUEUE_FAMILY_HPP
 
-#include <vulkan/vulkan.h>
-
 #include <optional>
+#include <vulkan/vulkan.hpp>
 
 namespace engine {
 
@@ -18,8 +17,8 @@ struct QueueFamilyIndices {
 
 class QueueFamily {
  public:
-  static engine::QueueFamilyIndices findSuitableQueueFamilies(
-      VkPhysicalDevice device, VkSurfaceKHR surface
+  static engine::QueueFamilyIndices findIndices(
+      const vk::PhysicalDevice &device, const vk::SurfaceKHR &surface
   );
 };
 }  // namespace engine

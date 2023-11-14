@@ -5,14 +5,17 @@
 #include <vulkan/vk_enum_string_helper.h>
 
 #include <stdexcept>
+#include <vulkan/vulkan.hpp>
 
-#define ABORT_ON_FAIL(result, _fmt, ...)                        \
-  if ((result) != VkResult::VK_SUCCESS) {                       \
-    const char* errorDetail = string_VkResult(result);          \
-    SPDLOG_CRITICAL(errorDetail);                               \
-    throw std::runtime_error(fmt::format(_fmt, ##__VA_ARGS__)); \
-  }                                                             \
-  0
+template <typename T, typename... Args>
+void ABORT_ON_FAIL(T result, const char* fmt, Args&&... args) {
+  vk::resultCheck(result, fmt::format(fmt, args...).c_str());
+}
+
+template <typename... Args>
+void ABORT_ON_FAIL(VkResult result, const char* fmt, Args&&... args) {
+  ABORT_ON_FAIL(static_cast<vk::Result>(result), fmt, args...);
+}
 
 #define ABORT(...)              \
   SPDLOG_CRITICAL(__VA_ARGS__); \

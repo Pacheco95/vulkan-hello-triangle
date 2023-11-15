@@ -43,15 +43,12 @@ add_executable(VulkanHelloTriangle src/main.cpp
         src/engine/Window.hpp
         src/engine/ValidationLayer.cpp
         src/engine/ValidationLayer.hpp
-        src/engine/PhysicalDevice.cpp
-        src/engine/PhysicalDevice.hpp
         src/engine/Utils.cpp
         src/engine/Utils.hpp
         src/engine/QueueFamily.cpp
         src/engine/QueueFamily.hpp
         src/engine/BinaryLoader.cpp
         src/engine/BinaryLoader.hpp
-        src/engine/VulkanDoubleCallWrapper.hpp
         src/engine/Vertex.hpp
         src/vendor/tiny_obj_loader.h
         src/engine/ModelLoader.cpp

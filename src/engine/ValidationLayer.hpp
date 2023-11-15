@@ -20,8 +20,20 @@ class ValidationLayer {
  private:
   vk::Instance& m_instance;
   vk::DebugUtilsMessengerEXT debugUtilsMessenger;
+  static uint32_t m_errorsCount;
 
+ public:
+  static uint32_t getErrorsCount();
+
+ private:
   void setupDebugMessenger();
+
+  static VKAPI_ATTR VkBool32 VKAPI_CALL debugMessageFunc(
+      VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+      VkDebugUtilsMessageTypeFlagsEXT messageTypes,
+      VkDebugUtilsMessengerCallbackDataEXT const* pCallbackData,
+      void* /*pUserData*/
+  );
 };
 
 }  // namespace engine

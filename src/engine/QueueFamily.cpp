@@ -2,8 +2,6 @@
 
 #include <vulkan/vulkan.hpp>
 
-#include "PhysicalDevice.hpp"
-
 engine::QueueFamilyIndices engine::QueueFamily::findIndices(
     const vk::PhysicalDevice &device, const vk::SurfaceKHR &surface
 ) {

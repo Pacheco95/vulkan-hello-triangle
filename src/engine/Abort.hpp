@@ -1,5 +1,4 @@
-#ifndef ABORT_HPP
-#define ABORT_HPP
+#pragma once
 
 #include <spdlog/spdlog.h>
 #include <vulkan/vk_enum_string_helper.h>
@@ -7,18 +6,58 @@
 #include <stdexcept>
 #include <vulkan/vulkan.hpp>
 
-template <typename T, typename... Args>
-void ABORT_ON_FAIL(T result, const char* fmt, Args&&... args) {
-  vk::resultCheck(result, fmt::format(fmt, args...).c_str());
+#include "Utils.hpp"
+
+template <typename... Args>
+inline void abortOnFail(
+    const vk::Result &result, const std::string &fmt, Args &&...fmtArgs
+) {
+  vk::resultCheck(result, fmt::format(fmt, fmtArgs...).c_str());
 }
 
 template <typename... Args>
-void ABORT_ON_FAIL(VkResult result, const char* fmt, Args&&... args) {
-  ABORT_ON_FAIL(static_cast<vk::Result>(result), fmt, args...);
+inline void abortOnFail(
+    VkResult result, const std::string &fmt, Args &&...fmtArgs
+) {
+  abortOnFail(static_cast<vk::Result>(result), fmt, fmtArgs...);
 }
 
-#define ABORT(...)              \
-  SPDLOG_CRITICAL(__VA_ARGS__); \
-  throw std::runtime_error(fmt::format(__VA_ARGS__))
+template <typename... Args>
+inline void abort(
+    const std::string &file,
+    int line,
+    const std::string &function,
 
-#endif  // ABORT_HPP
+    const std::string &format,
+    Args &&...fmtArgs
+) {
+  const auto &newFmt =
+      engine::Utils::prefixFormatWithErrorLocation(file, line, function, format)
+          .str();
+  throw std::runtime_error(fmt::format(newFmt, fmtArgs...));
+}
+
+template <typename T, typename... Args>
+inline void abortOnFail(
+    const std::string &file,
+    int line,
+    const std::string &function,
+
+    T result,
+    const std::string &fmt,
+    Args &&...fmtArgs
+) {
+  const auto &newFmt =
+      engine::Utils::prefixFormatWithErrorLocation(file, line, function, fmt)
+          .str();
+
+  abortOnFail(result, newFmt, fmtArgs...);
+}
+
+#define ABORT_ON_FAIL(result, fmt, ...)                                   \
+  abortOnFail(                                                            \
+      __FILE__, __LINE__, __PRETTY_FUNCTION__, result, fmt, ##__VA_ARGS__ \
+  )
+
+#define ABORT(fmt, ...) \
+  abort(__FILE__, __LINE__, __PRETTY_FUNCTION__, fmt, ##__VA_ARGS__)

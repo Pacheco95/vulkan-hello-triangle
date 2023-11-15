@@ -24,71 +24,9 @@ PFN_vkDestroyDebugUtilsMessengerEXT pfnVkDestroyDebugUtilsMessengerEXT;
   return pfnVkDestroyDebugUtilsMessengerEXT(instance, messenger, pAllocator);
 }
 
-VKAPI_ATTR VkBool32 VKAPI_CALL debugMessageFunc(
-    VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-    VkDebugUtilsMessageTypeFlagsEXT messageTypes,
-    VkDebugUtilsMessengerCallbackDataEXT const* pCallbackData,
-    void* /*pUserData*/
-) {
-  const std::string& severity = vk::to_string(
-      static_cast<vk::DebugUtilsMessageSeverityFlagBitsEXT>(messageSeverity)
-  );
-
-  const std::string& types =
-      vk::to_string(static_cast<vk::DebugUtilsMessageTypeFlagsEXT>(messageTypes)
-      );
-
-  static constexpr char pad1[]{"    {:16} = {}\n"};
-  static constexpr char pad2[]{"        {:12} = {}\n"};
-
-  using namespace fmt;
-
-  std::stringstream msg;
-
-  msg << format("{}: {}\n", severity, types)
-      << format(pad1, "messageIDName", pCallbackData->pMessageIdName)
-      << format(pad1, "messageIdNumber", pCallbackData->messageIdNumber)
-      << format(pad1, "message", pCallbackData->pMessage);
-
-  if (pCallbackData->queueLabelCount > 0) {
-    msg << "\tQueue Labels:\n";
-
-    for (uint32_t i = 0; i < pCallbackData->queueLabelCount; i++) {
-      const auto& labelName = pCallbackData->pQueueLabels[i].pLabelName;
-      msg << format(pad2, "labelName", labelName);
-    }
-  }
-
-  if (pCallbackData->cmdBufLabelCount > 0) {
-    msg << "\tCommandBuffer Labels:\n";
-
-    for (uint32_t i = 0; i < pCallbackData->cmdBufLabelCount; i++) {
-      msg << format(pad2, pCallbackData->pCmdBufLabels[i].pLabelName);
-    }
-  }
-
-  for (uint32_t i = 0; i < pCallbackData->objectCount; i++) {
-    const std::string& objType = vk::to_string(
-        static_cast<vk::ObjectType>(pCallbackData->pObjects[i].objectType)
-    );
-
-    uint64_t objHandle = pCallbackData->pObjects[i].objectHandle;
-
-    msg << format("\tObject {}:\n", i) << format(pad2, "objectType", objType)
-        << format(pad2, "objectHandle", fmt::ptr((void*)objHandle));
-
-    if (pCallbackData->pObjects[i].pObjectName) {
-      msg << format(pad2, "objectName", pCallbackData->pObjects[i].pObjectName);
-    }
-  }
-
-
-  SPDLOG_ERROR(msg.str());
-
-  return false;
-}
-
 namespace engine {
+uint32_t ValidationLayer::m_errorsCount = 0;
+
 ValidationLayer::ValidationLayer(vk::Instance& instance)
     : m_instance(instance) {
   setupDebugMessenger();
@@ -159,4 +97,72 @@ void ValidationLayer::setupDebugMessenger() {
 
   debugUtilsMessenger = m_instance.createDebugUtilsMessengerEXT(createInfo);
 }
+
+VkBool32 ValidationLayer::debugMessageFunc(
+    VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+    VkDebugUtilsMessageTypeFlagsEXT messageTypes,
+    VkDebugUtilsMessengerCallbackDataEXT const* pCallbackData,
+    void* /*pUserData*/
+) {
+  ++m_errorsCount;
+
+  const std::string& severity = vk::to_string(
+      static_cast<vk::DebugUtilsMessageSeverityFlagBitsEXT>(messageSeverity)
+  );
+
+  const std::string& types =
+      vk::to_string(static_cast<vk::DebugUtilsMessageTypeFlagsEXT>(messageTypes)
+      );
+
+  static constexpr char pad1[]{"    {:16} = {}\n"};
+  static constexpr char pad2[]{"        {:12} = {}\n"};
+
+  using namespace fmt;
+
+  std::stringstream msg;
+
+  msg << format("{}: {}\n", severity, types)
+      << format(pad1, "messageIDName", pCallbackData->pMessageIdName)
+      << format(pad1, "messageIdNumber", pCallbackData->messageIdNumber)
+      << format(pad1, "message", pCallbackData->pMessage);
+
+  if (pCallbackData->queueLabelCount > 0) {
+    msg << "\tQueue Labels:\n";
+
+    for (uint32_t i = 0; i < pCallbackData->queueLabelCount; i++) {
+      const auto& labelName = pCallbackData->pQueueLabels[i].pLabelName;
+      msg << format(pad2, "labelName", labelName);
+    }
+  }
+
+  if (pCallbackData->cmdBufLabelCount > 0) {
+    msg << "\tCommandBuffer Labels:\n";
+
+    for (uint32_t i = 0; i < pCallbackData->cmdBufLabelCount; i++) {
+      msg << format(pad2, pCallbackData->pCmdBufLabels[i].pLabelName);
+    }
+  }
+
+  for (uint32_t i = 0; i < pCallbackData->objectCount; i++) {
+    const std::string& objType = vk::to_string(
+        static_cast<vk::ObjectType>(pCallbackData->pObjects[i].objectType)
+    );
+
+    uint64_t objHandle = pCallbackData->pObjects[i].objectHandle;
+
+    msg << format("\tObject {}:\n", i) << format(pad2, "objectType", objType)
+        << format(pad2, "objectHandle", fmt::ptr((void*)objHandle));
+
+    if (pCallbackData->pObjects[i].pObjectName) {
+      msg << format(pad2, "objectName", pCallbackData->pObjects[i].pObjectName);
+    }
+  }
+
+
+  SPDLOG_ERROR(msg.str());
+
+  return false;
+}
+
+uint32_t ValidationLayer::getErrorsCount() { return m_errorsCount; }
 }  // namespace engine

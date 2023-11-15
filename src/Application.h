@@ -13,13 +13,11 @@
 #include "Camera.hpp"
 #include "Config.hpp"
 #include "ModelLoader.hpp"
-#include "PhysicalDevice.hpp"
 #include "QueueFamily.hpp"
 #include "Time.hpp"
 #include "Utils.hpp"
 #include "ValidationLayer.hpp"
 #include "Vertex.hpp"
-#include "VulkanDoubleCallWrapper.hpp"
 #include "Window.hpp"
 
 namespace app {
@@ -55,10 +53,16 @@ class Application {
     initCamera();
     mainLoop();
     cleanup();
+
+    SPDLOG_ERROR(
+        "{} validation errors found", ValidationLayer::getErrorsCount()
+    );
   }
 
  private:
+  std::unique_ptr<Camera> m_camera;
   std::unique_ptr<Window> m_window;
+
   vk::Instance m_instance;
   std::unique_ptr<ValidationLayer> m_validationLayer;
 
@@ -119,8 +123,6 @@ class Application {
   vk::DeviceMemory m_depthImageMemory;
   vk::ImageView m_depthImageView;
 
-  std::unique_ptr<Camera> m_camera;
-
   vk::SampleCountFlagBits m_msaaSamples = vk::SampleCountFlagBits::e1;
 
   vk::Image m_colorImage;
@@ -139,7 +141,11 @@ class Application {
 
   void initVulkan() {
     createInstance();
-    setupDebugMessenger();
+
+    if (Config::IS_VALIDATION_LAYERS_ENABLED) {
+      setupDebugMessenger();
+    }
+
     createSurface();
     pickPhysicalDevice();
     createLogicalDevice();
@@ -193,8 +199,6 @@ class Application {
     m_uniformBuffersMemory.clear();
 
     m_device.destroy(m_descriptorPool);
-    m_device.destroy(m_descriptorSetLayout);
-
     m_device.destroy(m_descriptorSetLayout);
 
     m_device.destroy(m_graphicsPipeline);
@@ -260,7 +264,7 @@ class Application {
     VkResult createSurfaceResult =
         glfwCreateWindowSurface(m_instance, *m_window, nullptr, &surface);
 
-    vk::resultCheck(
+    ABORT_ON_FAIL(
         vk::Result(createSurfaceResult), "Failed to create window surface"
     );
     m_surface = vk::SurfaceKHR(surface);
@@ -1237,7 +1241,7 @@ class Application {
       );
 
 
-      vk::resultCheck(
+      abortOnFail(
           m_device.mapMemory(
               m_uniformBuffersMemory[i],
               {},
@@ -1390,7 +1394,7 @@ class Application {
         static_cast<uint32_t>(m_commandBuffers.size());
 
     vk::to_string(vk::Result::eErrorOutOfDateKHR);
-    vk::resultCheck(
+    abortOnFail(
         m_device.allocateCommandBuffers(&allocInfo, m_commandBuffers.data()),
         "Failed to allocate command buffers"
     );
@@ -1402,7 +1406,7 @@ class Application {
     vk::CommandBufferBeginInfo beginInfo{};
 
 
-    vk::resultCheck(
+    abortOnFail(
         commandBuffer.begin(&beginInfo),
         "Failed to begin recording command buffer"
     );
@@ -1465,9 +1469,8 @@ class Application {
 
     commandBuffer.endRenderPass();
 
-    ABORT_ON_FAIL(
-        vkEndCommandBuffer(commandBuffer), "Failed to record command buffer"
-    );
+    // Todo check why vulkan-hpp returns void instead of vk::Result
+    commandBuffer.end();
   }
 
   void createSyncObjects() {
@@ -1520,7 +1523,7 @@ class Application {
       recreateSwapChain();
       return;
     } else if (result != vk::Result::eSuccess && result != vk::Result::eSuboptimalKHR) {
-      vk::resultCheck(result, "Failed to acquire swap chain image");
+      abortOnFail(result, "Failed to acquire swap chain image");
     }
 
     updateUniformBuffer(m_currentFrame);
@@ -1547,7 +1550,7 @@ class Application {
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = signalSemaphores;
 
-    vk::resultCheck(
+    abortOnFail(
         m_graphicsQueue.submit(1, &submitInfo, inFlightFence),
         "Failed to submit draw command buffer"
     );
@@ -1571,7 +1574,7 @@ class Application {
       m_framebufferResized = false;
       recreateSwapChain();
     } else if (result != vk::Result::eSuccess) {
-      vk::resultCheck(result, "Failed to present swap chain image");
+      abortOnFail(result, "Failed to present swap chain image");
     }
   }
 

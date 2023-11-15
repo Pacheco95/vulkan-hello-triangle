@@ -15,9 +15,8 @@ std::string Utils::versionNumberToString(uint32_t versionNumber) {
   return versionString.str();
 }
 
-void Utils::printPhysicalDeviceInfo(const VkPhysicalDevice &physicalDevice) {
-  VkPhysicalDeviceProperties deviceProps;
-  vkGetPhysicalDeviceProperties(physicalDevice, &deviceProps);
+void Utils::printPhysicalDeviceInfo(const vk::PhysicalDevice &physicalDevice) {
+  vk::PhysicalDeviceProperties deviceProps = physicalDevice.getProperties();
 
   const char msg[] =
       R"(Picked device:

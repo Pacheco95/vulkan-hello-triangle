@@ -23,7 +23,7 @@ inline void abortOnFail(
 }
 
 template <typename... Args>
-inline void abort(
+[[noreturn]] inline void abort(
     const std::string &file,
     int line,
     const std::string &function,

@@ -51,7 +51,7 @@ class Application {
     initWindow();
     initVulkan();
     initCamera();
-    mainLoop();
+    //    mainLoop();
     cleanup();
 
     SPDLOG_ERROR(
@@ -186,6 +186,22 @@ class Application {
     m_device.waitIdle();
   }
 
+  template <typename T>
+  void clearContainer(T container) {
+    for (const auto& item : container) {
+      m_device.destroy(item);
+    }
+    container.clear();
+  }
+
+  template <typename T>
+  void freeContainer(T container) {
+    for (const auto& item : container) {
+      m_device.free(item);
+    }
+    container.clear();
+  }
+
   void cleanup() {
     cleanupSwapChain();
 
@@ -195,8 +211,8 @@ class Application {
     m_device.destroy(m_textureImage);
     m_device.free(m_textureImageMemory);
 
-    m_uniformBuffers.clear();
-    m_uniformBuffersMemory.clear();
+    clearContainer(m_uniformBuffers);
+    freeContainer(m_uniformBuffersMemory);
 
     m_device.destroy(m_descriptorPool);
     m_device.destroy(m_descriptorSetLayout);
@@ -211,9 +227,9 @@ class Application {
     m_device.destroy(m_vertexBuffer);
     m_device.free(m_vertexBufferMemory);
 
-    m_renderFinishedSemaphores.clear();
-    m_imageAvailableSemaphores.clear();
-    m_inFlightFences.clear();
+    clearContainer(m_renderFinishedSemaphores);
+    clearContainer(m_imageAvailableSemaphores);
+    clearContainer(m_inFlightFences);
 
     m_device.destroy(m_commandPool);
 
@@ -710,6 +726,9 @@ class Application {
     vk::Result result;
     std::tie(result, m_graphicsPipeline) =
         m_device.createGraphicsPipeline(nullptr, pipelineInfo);
+
+    m_device.destroy(vertShaderModule);
+    m_device.destroy(fragShaderModule);
   }
 
   void createFrameBuffers() {
@@ -748,7 +767,10 @@ class Application {
   }
 
   void copyBufferToImage(
-      vk::Buffer buffer, vk::Image image, uint32_t width, uint32_t height
+      const vk::Buffer& buffer,
+      const vk::Image& image,
+      uint32_t width,
+      uint32_t height
   ) {
     vk::CommandBuffer commandBuffer = beginSingleTimeCommands();
 
@@ -871,6 +893,7 @@ class Application {
 
     vk::Buffer stagingBuffer;
     vk::DeviceMemory stagingBufferMemory;
+
     createBuffer(
         imageSize,
         vk::BufferUsageFlagBits::eTransferSrc,
@@ -940,6 +963,9 @@ class Application {
         texHeight,
         m_mipLevels
     );
+
+    m_device.destroy(stagingBuffer);
+    m_device.free(stagingBufferMemory);
   }
 
   void generateMipmaps(
@@ -1189,6 +1215,9 @@ class Application {
     );
 
     copyBuffer(stagingBuffer, m_vertexBuffer, bufferSize);
+
+    m_device.destroy(stagingBuffer);
+    m_device.free(stagingBufferMemory);
   }
 
   void createIndexBuffer() {
@@ -1221,6 +1250,9 @@ class Application {
     );
 
     copyBuffer(stagingBuffer, m_indexBuffer, bufferSize);
+
+    m_device.destroy(stagingBuffer);
+    m_device.free(stagingBufferMemory);
   }
 
   void createUniformBuffers() {
@@ -1393,7 +1425,6 @@ class Application {
     allocInfo.commandBufferCount =
         static_cast<uint32_t>(m_commandBuffers.size());
 
-    vk::to_string(vk::Result::eErrorOutOfDateKHR);
     abortOnFail(
         m_device.allocateCommandBuffers(&allocInfo, m_commandBuffers.data()),
         "Failed to allocate command buffers"
@@ -1586,8 +1617,8 @@ class Application {
     m_device.destroy(m_depthImageView);
     m_device.destroy(m_depthImage);
     m_device.free(m_depthImageMemory);
-    m_swapChainFrameBuffers.clear();
-    m_swapChainImageViews.clear();
+    clearContainer(m_swapChainFrameBuffers);
+    clearContainer(m_swapChainImageViews);
     m_device.destroy(m_swapChain);
   }
 

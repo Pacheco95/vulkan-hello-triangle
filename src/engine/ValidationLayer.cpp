@@ -25,7 +25,7 @@ PFN_vkDestroyDebugUtilsMessengerEXT pfnVkDestroyDebugUtilsMessengerEXT;
 }
 
 namespace engine {
-uint32_t ValidationLayer::m_errorsCount = 0;
+uint32_t ValidationLayer::s_errorsCount = 0;
 
 ValidationLayer::ValidationLayer(vk::Instance& instance)
     : m_instance(instance) {
@@ -34,6 +34,10 @@ ValidationLayer::ValidationLayer(vk::Instance& instance)
 
 ValidationLayer::~ValidationLayer() {
   m_instance.destroyDebugUtilsMessengerEXT(debugUtilsMessenger);
+
+  if (s_errorsCount) {
+    SPDLOG_ERROR("{} validation errors found", ValidationLayer::s_errorsCount);
+  }
 }
 
 bool ValidationLayer::checkLayers(
@@ -104,7 +108,7 @@ VkBool32 ValidationLayer::debugMessageFunc(
     VkDebugUtilsMessengerCallbackDataEXT const* pCallbackData,
     void* /*pUserData*/
 ) {
-  ++m_errorsCount;
+  ++s_errorsCount;
 
   const std::string& severity = vk::to_string(
       static_cast<vk::DebugUtilsMessageSeverityFlagBitsEXT>(messageSeverity)
@@ -164,5 +168,4 @@ VkBool32 ValidationLayer::debugMessageFunc(
   return false;
 }
 
-uint32_t ValidationLayer::getErrorsCount() { return m_errorsCount; }
 }  // namespace engine

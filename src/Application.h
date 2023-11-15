@@ -51,12 +51,8 @@ class Application {
     initWindow();
     initVulkan();
     initCamera();
-    //    mainLoop();
+    mainLoop();
     cleanup();
-
-    SPDLOG_ERROR(
-        "{} validation errors found", ValidationLayer::getErrorsCount()
-    );
   }
 
  private:
@@ -102,14 +98,14 @@ class Application {
 
   std::vector<Vertex> m_vertices;
   std::vector<uint32_t> m_indices;
-  vk::Buffer m_vertexBuffer;
-  vk::DeviceMemory m_vertexBufferMemory;
+  vk::UniqueBuffer m_vertexBuffer;
+  vk::UniqueDeviceMemory m_vertexBufferMemory;
 
-  vk::Buffer m_indexBuffer;
-  vk::DeviceMemory m_indexBufferMemory;
+  vk::UniqueBuffer m_indexBuffer;
+  vk::UniqueDeviceMemory m_indexBufferMemory;
 
-  std::vector<vk::Buffer> m_uniformBuffers;
-  std::vector<vk::DeviceMemory> m_uniformBuffersMemory;
+  std::vector<vk::UniqueBuffer> m_uniformBuffers;
+  std::vector<vk::UniqueDeviceMemory> m_uniformBuffersMemory;
   std::vector<void*> m_uniformBuffersMapped;
 
   uint32_t m_mipLevels;
@@ -211,8 +207,8 @@ class Application {
     m_device.destroy(m_textureImage);
     m_device.free(m_textureImageMemory);
 
-    clearContainer(m_uniformBuffers);
-    freeContainer(m_uniformBuffersMemory);
+    m_uniformBuffers.clear();
+    m_uniformBuffersMemory.clear();
 
     m_device.destroy(m_descriptorPool);
     m_device.destroy(m_descriptorSetLayout);
@@ -221,11 +217,11 @@ class Application {
     m_device.destroy(m_pipelineLayout);
     m_device.destroyRenderPass(m_renderPass);
 
-    m_device.destroy(m_indexBuffer);
-    m_device.free(m_indexBufferMemory);
+    m_indexBuffer.reset();
+    m_indexBufferMemory.reset();
 
-    m_device.destroy(m_vertexBuffer);
-    m_device.free(m_vertexBufferMemory);
+    m_vertexBuffer.reset();
+    m_vertexBufferMemory.reset();
 
     clearContainer(m_renderFinishedSemaphores);
     clearContainer(m_imageAvailableSemaphores);
@@ -891,8 +887,8 @@ class Application {
       ABORT("Failed to load texture image");
     }
 
-    vk::Buffer stagingBuffer;
-    vk::DeviceMemory stagingBufferMemory;
+    vk::UniqueBuffer stagingBuffer;
+    vk::UniqueDeviceMemory stagingBufferMemory;
 
     createBuffer(
         imageSize,
@@ -905,9 +901,9 @@ class Application {
 
     void* data;
     vk::Result ignored =
-        m_device.mapMemory(stagingBufferMemory, 0, imageSize, {}, &data);
+        m_device.mapMemory(*stagingBufferMemory, 0, imageSize, {}, &data);
     memcpy(data, pixels, static_cast<size_t>(imageSize));
-    m_device.unmapMemory(stagingBufferMemory);
+    m_device.unmapMemory(*stagingBufferMemory);
 
     stbi_image_free(pixels);
 
@@ -935,7 +931,7 @@ class Application {
     );
 
     copyBufferToImage(
-        stagingBuffer,
+        *stagingBuffer,
         m_textureImage,
         static_cast<uint32_t>(texWidth),
         static_cast<uint32_t>(texHeight)
@@ -950,7 +946,7 @@ class Application {
     );
 
     copyBufferToImage(
-        stagingBuffer,
+        *stagingBuffer,
         m_textureImage,
         static_cast<uint32_t>(texWidth),
         static_cast<uint32_t>(texHeight)
@@ -963,9 +959,6 @@ class Application {
         texHeight,
         m_mipLevels
     );
-
-    m_device.destroy(stagingBuffer);
-    m_device.free(stagingBufferMemory);
   }
 
   void generateMipmaps(
@@ -1187,8 +1180,8 @@ class Application {
   void createVertexBuffer() {
     vk::DeviceSize bufferSize = sizeof(m_vertices[0]) * m_vertices.size();
 
-    vk::Buffer stagingBuffer;
-    vk::DeviceMemory stagingBufferMemory;
+    vk::UniqueBuffer stagingBuffer;
+    vk::UniqueDeviceMemory stagingBufferMemory;
 
     createBuffer(
         bufferSize,
@@ -1201,9 +1194,9 @@ class Application {
 
     void* data;
     vk::Result ignored =
-        m_device.mapMemory(stagingBufferMemory, {}, bufferSize, {}, &data);
+        m_device.mapMemory(*stagingBufferMemory, {}, bufferSize, {}, &data);
     memcpy(data, m_vertices.data(), (size_t)bufferSize);
-    m_device.unmapMemory(stagingBufferMemory);
+    m_device.unmapMemory(*stagingBufferMemory);
 
     createBuffer(
         bufferSize,
@@ -1214,17 +1207,15 @@ class Application {
         m_vertexBufferMemory
     );
 
-    copyBuffer(stagingBuffer, m_vertexBuffer, bufferSize);
-
-    m_device.destroy(stagingBuffer);
-    m_device.free(stagingBufferMemory);
+    copyBuffer(*stagingBuffer, *m_vertexBuffer, bufferSize);
   }
 
   void createIndexBuffer() {
     vk::DeviceSize bufferSize = sizeof(m_indices[0]) * m_indices.size();
 
-    vk::Buffer stagingBuffer;
-    vk::DeviceMemory stagingBufferMemory;
+    vk::UniqueBuffer stagingBuffer;
+    vk::UniqueDeviceMemory stagingBufferMemory;
+
     createBuffer(
         bufferSize,
         vk::BufferUsageFlagBits::eTransferSrc,
@@ -1236,9 +1227,9 @@ class Application {
 
     void* data;
     vk::Result ignored =
-        m_device.mapMemory(stagingBufferMemory, {}, bufferSize, {}, &data);
+        m_device.mapMemory(*stagingBufferMemory, {}, bufferSize, {}, &data);
     memcpy(data, m_indices.data(), (size_t)bufferSize);
-    m_device.unmapMemory(stagingBufferMemory);
+    m_device.unmapMemory(*stagingBufferMemory);
 
     createBuffer(
         bufferSize,
@@ -1249,10 +1240,7 @@ class Application {
         m_indexBufferMemory
     );
 
-    copyBuffer(stagingBuffer, m_indexBuffer, bufferSize);
-
-    m_device.destroy(stagingBuffer);
-    m_device.free(stagingBufferMemory);
+    copyBuffer(*stagingBuffer, *m_indexBuffer, bufferSize);
   }
 
   void createUniformBuffers() {
@@ -1275,7 +1263,7 @@ class Application {
 
       abortOnFail(
           m_device.mapMemory(
-              m_uniformBuffersMemory[i],
+              *m_uniformBuffersMemory[i],
               {},
               bufferSize,
               {},
@@ -1325,7 +1313,7 @@ class Application {
 
     for (size_t i = 0; i < Config::MAX_FRAMES_IN_FLIGHT; i++) {
       vk::DescriptorBufferInfo bufferInfo{};
-      bufferInfo.buffer = m_uniformBuffers[i];
+      bufferInfo.buffer = *m_uniformBuffers[i];
       bufferInfo.offset = 0;
       bufferInfo.range = sizeof(UniformBufferObject);
 
@@ -1364,27 +1352,27 @@ class Application {
       vk::DeviceSize size,
       vk::BufferUsageFlags usage,
       vk::MemoryPropertyFlags properties,
-      vk::Buffer& buffer,
-      vk::DeviceMemory& bufferMemory
+      vk::UniqueBuffer& buffer,
+      vk::UniqueDeviceMemory& bufferMemory
   ) {
     vk::BufferCreateInfo bufferInfo{};
     bufferInfo.size = size;
     bufferInfo.usage = usage;
     bufferInfo.sharingMode = vk::SharingMode::eExclusive;
 
-    buffer = m_device.createBuffer(bufferInfo);
+    buffer = m_device.createBufferUnique(bufferInfo);
 
     vk::MemoryRequirements memRequirements;
-    m_device.getBufferMemoryRequirements(buffer, &memRequirements);
+    m_device.getBufferMemoryRequirements(*buffer, &memRequirements);
 
     vk::MemoryAllocateInfo allocInfo{};
     allocInfo.allocationSize = memRequirements.size;
     allocInfo.memoryTypeIndex =
         findMemoryType(memRequirements.memoryTypeBits, properties);
 
-    bufferMemory = m_device.allocateMemory(allocInfo);
+    bufferMemory = m_device.allocateMemoryUnique(allocInfo);
 
-    m_device.bindBufferMemory(buffer, bufferMemory, 0);
+    m_device.bindBufferMemory(*buffer, *bufferMemory, 0);
   }
 
   void copyBuffer(
@@ -1478,11 +1466,11 @@ class Application {
     scissor.extent = m_swapChainExtent;
     commandBuffer.setScissor(0, 1, &scissor);
 
-    vk::Buffer vertexBuffers[] = {m_vertexBuffer};
+    vk::Buffer vertexBuffers[] = {*m_vertexBuffer};
     vk::DeviceSize offsets[] = {0};
     commandBuffer.bindVertexBuffers(0, 1, vertexBuffers, offsets);
 
-    commandBuffer.bindIndexBuffer(m_indexBuffer, 0, vk::IndexType::eUint32);
+    commandBuffer.bindIndexBuffer(*m_indexBuffer, 0, vk::IndexType::eUint32);
 
     commandBuffer.bindDescriptorSets(
         vk::PipelineBindPoint::eGraphics,

@@ -20,10 +20,7 @@ class ValidationLayer {
  private:
   vk::Instance& m_instance;
   vk::DebugUtilsMessengerEXT debugUtilsMessenger;
-  static uint32_t m_errorsCount;
-
- public:
-  static uint32_t getErrorsCount();
+  static uint32_t s_errorsCount;
 
  private:
   void setupDebugMessenger();

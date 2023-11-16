@@ -523,14 +523,11 @@ class Application {
     }
   }
 
-  vk::ShaderModule createShaderModule(const std::vector<char>& code) {
+  vk::UniqueShaderModule createShaderModule(const std::vector<char>& code) {
     vk::ShaderModuleCreateInfo createInfo{};
-
     createInfo.codeSize = code.size();
     createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
-
-    vk::ShaderModule module = m_device->createShaderModule(createInfo);
-    return module;
+    return m_device->createShaderModuleUnique(createInfo);
   }
 
   void createRenderPass() {
@@ -616,18 +613,18 @@ class Application {
     auto vertShaderCode = BinaryLoader::load("res/shaders/shader.vert.spv");
     auto fragShaderCode = BinaryLoader::load("res/shaders/shader.frag.spv");
 
-    vk::ShaderModule vertShaderModule = createShaderModule(vertShaderCode);
-    vk::ShaderModule fragShaderModule = createShaderModule(fragShaderCode);
+    auto vertShaderModule = createShaderModule(vertShaderCode);
+    auto fragShaderModule = createShaderModule(fragShaderCode);
 
     vk::PipelineShaderStageCreateInfo vertShaderStageInfo{};
 
     vertShaderStageInfo.stage = vk::ShaderStageFlagBits::eVertex;
-    vertShaderStageInfo.module = vertShaderModule;
+    vertShaderStageInfo.module = *vertShaderModule;
     vertShaderStageInfo.pName = "main";
 
     vk::PipelineShaderStageCreateInfo fragShaderStageInfo{};
     fragShaderStageInfo.stage = vk::ShaderStageFlagBits::eFragment;
-    fragShaderStageInfo.module = fragShaderModule;
+    fragShaderStageInfo.module = *fragShaderModule;
     fragShaderStageInfo.pName = "main";
 
     vk::PipelineShaderStageCreateInfo shaderStages[] = {
@@ -723,9 +720,6 @@ class Application {
     auto createResult = m_device->createGraphicsPipelineUnique(nullptr, pipelineInfo);
     ABORT_ON_FAIL(createResult.result, "Failed to create graphics pipeline");
     m_graphicsPipeline = std::move(createResult.value);
-
-    m_device->destroy(vertShaderModule);
-    m_device->destroy(fragShaderModule);
   }
 
   void createFrameBuffers() {

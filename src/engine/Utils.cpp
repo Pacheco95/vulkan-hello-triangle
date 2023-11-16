@@ -19,10 +19,10 @@ void Utils::printPhysicalDeviceInfo(const vk::PhysicalDevice &physicalDevice) {
   vk::PhysicalDeviceProperties deviceProps = physicalDevice.getProperties();
 
   const char msg[] =
-      R"(Picked device:
-           Name: {}
-           API version: v{}
-           Driver version: v{})";
+      "Picked device:\n"
+      "\tName: {}\n"
+      "\tAPI version: v{}\n"
+      "\tDriver version: v{}";
 
   SPDLOG_DEBUG(
       msg,

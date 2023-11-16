@@ -50,6 +50,7 @@ class Application {
   void run() {
     initWindow();
     initVulkan();
+    printDebugInfo();
     initCamera();
     mainLoop();
     cleanup();
@@ -137,11 +138,7 @@ class Application {
 
   void initVulkan() {
     createInstance();
-
-    if (Config::IS_VALIDATION_LAYERS_ENABLED) {
-      setupDebugMessenger();
-    }
-
+    setupDebugMessenger();
     createSurface();
     pickPhysicalDevice();
     createLogicalDevice();
@@ -165,6 +162,12 @@ class Application {
     createDescriptorSets();
     createCommandBuffers();
     createSyncObjects();
+  }
+
+  void printDebugInfo() {
+    Utils::printPhysicalDeviceInfo(m_physicalDevice);
+    SPDLOG_DEBUG("Using MSAAx{}", static_cast<uint8_t>(m_msaaSamples));
+    SPDLOG_DEBUG("Got {} swap chain images", m_swapChainImages.size());
   }
 
   void initCamera() { m_camera = std::make_unique<Camera>(*m_window); }
@@ -251,6 +254,10 @@ class Application {
   }
 
   void setupDebugMessenger() {
+    if (!Config::IS_VALIDATION_LAYERS_ENABLED) {
+      return;
+    }
+
     m_validationLayer = std::make_unique<ValidationLayer>(m_instance);
 
     std::vector<vk::LayerProperties> instanceLayerProperties =
@@ -289,10 +296,6 @@ class Application {
     if (m_physicalDevice == VK_NULL_HANDLE) {
       ABORT("Failed to find a suitable GPU");
     }
-
-    SPDLOG_DEBUG("Using MSAAx{}", static_cast<uint8_t>(m_msaaSamples));
-
-    Utils::printPhysicalDeviceInfo(m_physicalDevice);
   }
 
   static vk::SurfaceFormatKHR chooseSwapSurfaceFormat(
@@ -493,8 +496,6 @@ class Application {
     m_swapChain = m_device->createSwapchainKHRUnique(createInfo);
 
     m_swapChainImages = m_device->getSwapchainImagesKHR(*m_swapChain);
-
-    SPDLOG_DEBUG("Got {} swap chain images", m_swapChainImages.size());
 
     m_swapChainImageFormat = surfaceFormat.format;
     m_swapChainExtent = extent;
@@ -709,7 +710,8 @@ class Application {
     pipelineInfo.subpass = 0;
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
-    auto createResult = m_device->createGraphicsPipelineUnique(nullptr, pipelineInfo);
+    auto createResult =
+        m_device->createGraphicsPipelineUnique(nullptr, pipelineInfo);
     ABORT_ON_FAIL(createResult.result, "Failed to create graphics pipeline");
     m_graphicsPipeline = std::move(createResult.value);
   }

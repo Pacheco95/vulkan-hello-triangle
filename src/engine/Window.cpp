@@ -27,14 +27,11 @@ Window::Window(size_t width, size_t height, const std::string &title) {
   }
 
   centerWindow();
-
-  SPDLOG_DEBUG("Created Window: {}", fmt::ptr(m_window));
 }
 
 Window::~Window() {
   if (m_window) {
     glfwDestroyWindow(m_window);
-    SPDLOG_DEBUG("Destroyed Window: {}", fmt::ptr(m_window));
   }
 
   glfwTerminate();

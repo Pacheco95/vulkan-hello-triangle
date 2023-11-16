@@ -90,7 +90,7 @@ class Application {
 
   std::vector<vk::UniqueSemaphore> m_imageAvailableSemaphores;
   std::vector<vk::UniqueSemaphore> m_renderFinishedSemaphores;
-  std::vector<vk::Fence> m_inFlightFences;
+  std::vector<vk::UniqueFence> m_inFlightFences;
 
   bool m_framebufferResized = false;
 
@@ -217,7 +217,7 @@ class Application {
 
     m_renderFinishedSemaphores.clear();
     m_imageAvailableSemaphores.clear();
-    clearContainer(m_inFlightFences);
+    m_inFlightFences.clear();
 
     m_device->destroy(m_commandPool);
 
@@ -1495,12 +1495,12 @@ class Application {
       m_renderFinishedSemaphores.emplace_back(
           m_device->createSemaphoreUnique(semaphoreInfo)
       );
-      m_inFlightFences.emplace_back(m_device->createFence(fenceInfo));
+      m_inFlightFences.emplace_back(m_device->createFenceUnique(fenceInfo));
     }
   }
 
   void drawFrame() {
-    vk::Fence inFlightFence = m_inFlightFences[m_currentFrame];
+    vk::Fence inFlightFence = *m_inFlightFences[m_currentFrame];
     vk::Semaphore imageAvailableSemaphore =
         *m_imageAvailableSemaphores[m_currentFrame];
     vk::SwapchainKHR swapChain = *m_swapChain;

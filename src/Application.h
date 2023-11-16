@@ -82,7 +82,7 @@ class Application {
   std::vector<vk::DescriptorSet> m_descriptorSets;
   vk::DescriptorSetLayout m_descriptorSetLayout;
   vk::UniquePipelineLayout m_pipelineLayout;
-  vk::Pipeline m_graphicsPipeline;
+  vk::UniquePipeline m_graphicsPipeline;
 
   std::vector<vk::UniqueFramebuffer> m_swapChainFrameBuffers;
   vk::CommandPool m_commandPool;
@@ -213,7 +213,7 @@ class Application {
     m_descriptorPool.reset();
     m_device->destroy(m_descriptorSetLayout);
 
-    m_device->destroy(m_graphicsPipeline);
+    m_graphicsPipeline.reset();
     m_pipelineLayout.reset();
     m_device->destroyRenderPass(m_renderPass);
 
@@ -720,9 +720,9 @@ class Application {
     pipelineInfo.subpass = 0;
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
-    vk::Result result;
-    std::tie(result, m_graphicsPipeline) =
-        m_device->createGraphicsPipeline(nullptr, pipelineInfo);
+    auto createResult = m_device->createGraphicsPipelineUnique(nullptr, pipelineInfo);
+    ABORT_ON_FAIL(createResult.result, "Failed to create graphics pipeline");
+    m_graphicsPipeline = std::move(createResult.value);
 
     m_device->destroy(vertShaderModule);
     m_device->destroy(fragShaderModule);
@@ -1450,7 +1450,7 @@ class Application {
     );
 
     commandBuffer.bindPipeline(
-        vk::PipelineBindPoint::eGraphics, m_graphicsPipeline
+        vk::PipelineBindPoint::eGraphics, *m_graphicsPipeline
     );
 
     vk::Viewport viewport{};

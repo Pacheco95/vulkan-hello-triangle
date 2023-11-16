@@ -78,7 +78,7 @@ class Application {
   vk::SurfaceKHR m_surface;
 
   vk::RenderPass m_renderPass;
-  vk::DescriptorPool m_descriptorPool;
+  vk::UniqueDescriptorPool m_descriptorPool;
   std::vector<vk::DescriptorSet> m_descriptorSets;
   vk::DescriptorSetLayout m_descriptorSetLayout;
   vk::PipelineLayout m_pipelineLayout;
@@ -210,7 +210,7 @@ class Application {
     m_uniformBuffers.clear();
     m_uniformBuffersMemory.clear();
 
-    m_device->destroy(m_descriptorPool);
+    m_descriptorPool.reset();
     m_device->destroy(m_descriptorSetLayout);
 
     m_device->destroy(m_graphicsPipeline);
@@ -1292,7 +1292,7 @@ class Application {
     poolInfo.pPoolSizes = poolSizes.data();
     poolInfo.maxSets = MAX_FRAMES_IN_FLIGHT;
 
-    m_descriptorPool = m_device->createDescriptorPool(poolInfo);
+    m_descriptorPool = m_device->createDescriptorPoolUnique(poolInfo);
   }
 
   void createDescriptorSets() {
@@ -1301,7 +1301,7 @@ class Application {
     );
     vk::DescriptorSetAllocateInfo allocInfo{};
 
-    allocInfo.descriptorPool = m_descriptorPool;
+    allocInfo.descriptorPool = *m_descriptorPool;
     allocInfo.descriptorSetCount =
         static_cast<uint32_t>(Config::MAX_FRAMES_IN_FLIGHT);
     allocInfo.pSetLayouts = layouts.data();

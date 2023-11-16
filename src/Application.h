@@ -20,6 +20,9 @@
 #include "Vertex.hpp"
 #include "Window.hpp"
 
+// Avoid annoying compiler errors
+#define PASS (void)
+
 namespace app {
 using namespace engine;
 
@@ -881,7 +884,7 @@ class Application {
     );
 
     void* data;
-    m_device->mapMemory(*stagingBufferMemory, 0, imageSize, {}, &data);
+    PASS m_device->mapMemory(*stagingBufferMemory, 0, imageSize, {}, &data);
     memcpy(data, pixels, static_cast<size_t>(imageSize));
     m_device->unmapMemory(*stagingBufferMemory);
 
@@ -1171,7 +1174,7 @@ class Application {
     );
 
     void* data;
-    m_device->mapMemory(*stagingBufferMemory, {}, bufferSize, {}, &data);
+    PASS m_device->mapMemory(*stagingBufferMemory, {}, bufferSize, {}, &data);
     memcpy(data, m_vertices.data(), (size_t)bufferSize);
     m_device->unmapMemory(*stagingBufferMemory);
 
@@ -1203,7 +1206,7 @@ class Application {
     );
 
     void* data;
-    m_device->mapMemory(*stagingBufferMemory, {}, bufferSize, {}, &data);
+    PASS m_device->mapMemory(*stagingBufferMemory, {}, bufferSize, {}, &data);
     memcpy(data, m_indices.data(), (size_t)bufferSize);
     m_device->unmapMemory(*stagingBufferMemory);
 
@@ -1499,7 +1502,7 @@ class Application {
     vk::Semaphore renderFinishedSemaphore =
         *m_renderFinishedSemaphores[m_currentFrame];
 
-    m_device->waitForFences(1, &inFlightFence, VK_TRUE, UINT64_MAX);
+    PASS m_device->waitForFences(1, &inFlightFence, VK_TRUE, UINT64_MAX);
 
     uint32_t imageIndex;
     vk::Result result = m_device->acquireNextImageKHR(
@@ -1519,7 +1522,7 @@ class Application {
 
     updateUniformBuffer(m_currentFrame);
 
-    m_device->resetFences(1, &inFlightFence);
+    PASS m_device->resetFences(1, &inFlightFence);
 
     commandBuffer.reset();
     recordCommandBuffer(commandBuffer, imageIndex);
@@ -1674,7 +1677,7 @@ class Application {
     allocInfo.commandBufferCount = 1;
 
     vk::CommandBuffer commandBuffer;
-    m_device->allocateCommandBuffers(&allocInfo, &commandBuffer);
+    PASS m_device->allocateCommandBuffers(&allocInfo, &commandBuffer);
 
     vk::CommandBufferBeginInfo beginInfo{};
 
@@ -1693,7 +1696,7 @@ class Application {
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &commandBuffer;
 
-    m_graphicsQueue.submit(1, &submitInfo, VK_NULL_HANDLE);
+    PASS m_graphicsQueue.submit(1, &submitInfo, VK_NULL_HANDLE);
     m_graphicsQueue.waitIdle();
 
     m_device->freeCommandBuffers(m_commandPool, 1, &commandBuffer);

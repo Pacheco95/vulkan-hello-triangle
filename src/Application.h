@@ -88,8 +88,8 @@ class Application {
   vk::CommandPool m_commandPool;
   std::vector<vk::CommandBuffer> m_commandBuffers;
 
-  std::vector<vk::Semaphore> m_imageAvailableSemaphores;
-  std::vector<vk::Semaphore> m_renderFinishedSemaphores;
+  std::vector<vk::UniqueSemaphore> m_imageAvailableSemaphores;
+  std::vector<vk::UniqueSemaphore> m_renderFinishedSemaphores;
   std::vector<vk::Fence> m_inFlightFences;
 
   bool m_framebufferResized = false;
@@ -215,8 +215,8 @@ class Application {
     m_vertexBuffer.reset();
     m_vertexBufferMemory.reset();
 
-    clearContainer(m_renderFinishedSemaphores);
-    clearContainer(m_imageAvailableSemaphores);
+    m_renderFinishedSemaphores.clear();
+    m_imageAvailableSemaphores.clear();
     clearContainer(m_inFlightFences);
 
     m_device->destroy(m_commandPool);
@@ -1490,10 +1490,10 @@ class Application {
 
     for (auto i = 0; i < Config::MAX_FRAMES_IN_FLIGHT; ++i) {
       m_imageAvailableSemaphores.emplace_back(
-          m_device->createSemaphore(semaphoreInfo)
+          m_device->createSemaphoreUnique(semaphoreInfo)
       );
       m_renderFinishedSemaphores.emplace_back(
-          m_device->createSemaphore(semaphoreInfo)
+          m_device->createSemaphoreUnique(semaphoreInfo)
       );
       m_inFlightFences.emplace_back(m_device->createFence(fenceInfo));
     }
@@ -1502,11 +1502,11 @@ class Application {
   void drawFrame() {
     vk::Fence inFlightFence = m_inFlightFences[m_currentFrame];
     vk::Semaphore imageAvailableSemaphore =
-        m_imageAvailableSemaphores[m_currentFrame];
+        *m_imageAvailableSemaphores[m_currentFrame];
     vk::SwapchainKHR swapChain = *m_swapChain;
     vk::CommandBuffer commandBuffer = m_commandBuffers[m_currentFrame];
     vk::Semaphore renderFinishedSemaphore =
-        m_renderFinishedSemaphores[m_currentFrame];
+        *m_renderFinishedSemaphores[m_currentFrame];
 
     vk::Result result;
     result = m_device->waitForFences(1, &inFlightFence, VK_TRUE, UINT64_MAX);

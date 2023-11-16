@@ -114,19 +114,19 @@ class Application {
 
   uint32_t m_mipLevels;
   vk::Image m_textureImage;
-  vk::DeviceMemory m_textureImageMemory;
+  vk::UniqueDeviceMemory m_textureImageMemory;
 
   vk::UniqueImageView m_textureImageView;
   vk::Sampler m_textureSampler;
 
   vk::Image m_depthImage;
-  vk::DeviceMemory m_depthImageMemory;
+  vk::UniqueDeviceMemory m_depthImageMemory;
   vk::UniqueImageView m_depthImageView;
 
   vk::SampleCountFlagBits m_msaaSamples = vk::SampleCountFlagBits::e1;
 
   vk::Image m_colorImage;
-  vk::DeviceMemory m_colorImageMemory;
+  vk::UniqueDeviceMemory m_colorImageMemory;
   vk::UniqueImageView m_colorImageView;
 
   void initWindow() {
@@ -195,7 +195,7 @@ class Application {
     m_textureImageView.reset();
 
     m_device->destroy(m_textureImage);
-    m_device->free(m_textureImageMemory);
+    m_textureImageMemory.reset();
 
     m_uniformBuffers.clear();
     m_uniformBuffersMemory.clear();
@@ -1074,7 +1074,7 @@ class Application {
       vk::ImageUsageFlags usage,
       vk::MemoryPropertyFlags properties,
       vk::Image& image,
-      vk::DeviceMemory& imageMemory
+      vk::UniqueDeviceMemory& imageMemory
   ) {
     vk::ImageCreateInfo imageInfo{};
     imageInfo.imageType = vk::ImageType::e2D;
@@ -1100,9 +1100,9 @@ class Application {
     allocInfo.memoryTypeIndex =
         findMemoryType(memRequirements.memoryTypeBits, properties);
 
-    imageMemory = m_device->allocateMemory(allocInfo);
+    imageMemory = m_device->allocateMemoryUnique(allocInfo);
 
-    m_device->bindImageMemory(image, imageMemory, 0);
+    m_device->bindImageMemory(image, *imageMemory, 0);
   }
 
   void createTextureImageView() {
@@ -1575,11 +1575,11 @@ class Application {
   void cleanupSwapChain() {
     m_colorImageView.reset();
     m_device->destroy(m_colorImage);
-    m_device->free(m_colorImageMemory);
+    m_colorImageMemory.reset();
 
     m_depthImageView.reset();
     m_device->destroy(m_depthImage);
-    m_device->free(m_depthImageMemory);
+    m_depthImageMemory.reset();
     m_swapChainFrameBuffers.clear();
     m_swapChainImageViews.clear();
     m_swapChain.reset();

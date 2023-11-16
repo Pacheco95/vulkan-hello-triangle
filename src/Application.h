@@ -117,7 +117,7 @@ class Application {
   vk::UniqueDeviceMemory m_textureImageMemory;
 
   vk::UniqueImageView m_textureImageView;
-  vk::Sampler m_textureSampler;
+  vk::UniqueSampler m_textureSampler;
 
   vk::Image m_depthImage;
   vk::UniqueDeviceMemory m_depthImageMemory;
@@ -191,7 +191,7 @@ class Application {
   void cleanup() {
     cleanupSwapChain();
 
-    m_device->destroy(m_textureSampler);
+    m_textureSampler.reset();
     m_textureImageView.reset();
 
     m_device->destroy(m_textureImage);
@@ -1153,7 +1153,7 @@ class Application {
     samplerInfo.maxLod = VK_LOD_CLAMP_NONE;
     samplerInfo.mipLodBias = 0.0f;
 
-    m_textureSampler = m_device->createSampler(samplerInfo);
+    m_textureSampler = m_device->createSamplerUnique(samplerInfo);
   }
 
   void loadModel() { ModelLoader::loadObj(MODEL_PATH, m_vertices, m_indices); }
@@ -1299,7 +1299,7 @@ class Application {
       vk::DescriptorImageInfo imageInfo{};
       imageInfo.imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
       imageInfo.imageView = *m_textureImageView;
-      imageInfo.sampler = m_textureSampler;
+      imageInfo.sampler = *m_textureSampler;
 
       std::array<vk::WriteDescriptorSet, 2> descriptorWrites{};
 

@@ -84,7 +84,7 @@ class Application {
   vk::RenderPass m_renderPass;
   vk::UniqueDescriptorPool m_descriptorPool;
   std::vector<vk::DescriptorSet> m_descriptorSets;
-  vk::DescriptorSetLayout m_descriptorSetLayout;
+  vk::UniqueDescriptorSetLayout m_descriptorSetLayout;
   vk::UniquePipelineLayout m_pipelineLayout;
   vk::UniquePipeline m_graphicsPipeline;
 
@@ -201,7 +201,7 @@ class Application {
     m_uniformBuffersMemory.clear();
 
     m_descriptorPool.reset();
-    m_device->destroy(m_descriptorSetLayout);
+    m_descriptorSetLayout.reset();
 
     m_graphicsPipeline.reset();
     m_pipelineLayout.reset();
@@ -685,7 +685,7 @@ class Application {
     vk::PipelineLayoutCreateInfo pipelineLayoutInfo{};
 
     pipelineLayoutInfo.setLayoutCount = 1;
-    pipelineLayoutInfo.pSetLayouts = &m_descriptorSetLayout;
+    pipelineLayoutInfo.pSetLayouts = &*m_descriptorSetLayout;
 
     m_pipelineLayout = m_device->createPipelineLayoutUnique(pipelineLayoutInfo);
 
@@ -1275,7 +1275,7 @@ class Application {
 
   void createDescriptorSets() {
     std::vector<vk::DescriptorSetLayout> layouts(
-        Config::MAX_FRAMES_IN_FLIGHT, m_descriptorSetLayout
+        Config::MAX_FRAMES_IN_FLIGHT, *m_descriptorSetLayout
     );
     vk::DescriptorSetAllocateInfo allocInfo{};
 
@@ -1650,7 +1650,8 @@ class Application {
     layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
     layoutInfo.pBindings = bindings.data();
 
-    m_descriptorSetLayout = m_device->createDescriptorSetLayout(layoutInfo);
+    m_descriptorSetLayout =
+        m_device->createDescriptorSetLayoutUnique(layoutInfo);
   }
 
   void updateUniformBuffer(uint32_t currentImage) {

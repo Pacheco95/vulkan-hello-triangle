@@ -190,14 +190,6 @@ class Application {
     container.clear();
   }
 
-  template <typename T>
-  void freeContainer(T container) {
-    for (const auto& item : container) {
-      m_device->free(item);
-    }
-    container.clear();
-  }
-
   void cleanup() {
     cleanupSwapChain();
 

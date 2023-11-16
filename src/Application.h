@@ -84,7 +84,7 @@ class Application {
   vk::PipelineLayout m_pipelineLayout;
   vk::Pipeline m_graphicsPipeline;
 
-  std::vector<vk::Framebuffer> m_swapChainFrameBuffers;
+  std::vector<vk::UniqueFramebuffer> m_swapChainFrameBuffers;
   vk::CommandPool m_commandPool;
   std::vector<vk::CommandBuffer> m_commandBuffers;
 
@@ -509,6 +509,7 @@ class Application {
   }
 
   void createImageViews() {
+    m_swapChainImageViews.clear();
     m_swapChainImageViews.reserve(m_swapChainImages.size());
 
     for (auto& swapChainImage : m_swapChainImages) {
@@ -518,7 +519,7 @@ class Application {
           vk::ImageAspectFlagBits::eColor,
           1
       );
-      m_swapChainImageViews.emplace_back(std::move(view));
+      m_swapChainImageViews.emplace_back(view);
     }
   }
 
@@ -728,6 +729,7 @@ class Application {
   }
 
   void createFrameBuffers() {
+    m_swapChainFrameBuffers.clear();
     m_swapChainFrameBuffers.reserve(m_swapChainImageViews.size());
 
     for (const auto& imageView : m_swapChainImageViews) {
@@ -744,9 +746,8 @@ class Application {
       framebufferInfo.height = m_swapChainExtent.height;
       framebufferInfo.layers = 1;
 
-      m_swapChainFrameBuffers.emplace_back(
-          m_device->createFramebuffer(framebufferInfo)
-      );
+      auto buffer = m_device->createFramebufferUnique(framebufferInfo);
+      m_swapChainFrameBuffers.push_back(std::move(buffer));
     }
   }
 
@@ -1433,7 +1434,7 @@ class Application {
     vk::RenderPassBeginInfo renderPassInfo{};
 
     renderPassInfo.renderPass = m_renderPass;
-    renderPassInfo.framebuffer = m_swapChainFrameBuffers[imageIndex];
+    renderPassInfo.framebuffer = *m_swapChainFrameBuffers[imageIndex];
     renderPassInfo.renderArea.offset = vk::Offset2D{0, 0};
     renderPassInfo.renderArea.extent = m_swapChainExtent;
 
@@ -1602,7 +1603,7 @@ class Application {
     m_device->destroy(m_depthImageView);
     m_device->destroy(m_depthImage);
     m_device->free(m_depthImageMemory);
-    clearContainer(m_swapChainFrameBuffers);
+    m_swapChainFrameBuffers.clear();
     clearContainer(m_swapChainImageViews);
     m_device->destroy(m_swapChain);
   }

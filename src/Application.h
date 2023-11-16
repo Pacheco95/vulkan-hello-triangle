@@ -68,7 +68,7 @@ class Application {
   vk::Queue m_graphicsQueue;
   vk::Queue m_presentQueue;
 
-  vk::SwapchainKHR m_swapChain;
+  vk::UniqueSwapchainKHR m_swapChain;
   std::vector<vk::Image> m_swapChainImages;
   std::vector<vk::ImageView> m_swapChainImageViews;
 
@@ -490,9 +490,9 @@ class Application {
 
     createInfo.oldSwapchain = VK_NULL_HANDLE;
 
-    m_swapChain = m_device->createSwapchainKHR(createInfo);
+    m_swapChain = m_device->createSwapchainKHRUnique(createInfo);
 
-    m_swapChainImages = m_device->getSwapchainImagesKHR(m_swapChain);
+    m_swapChainImages = m_device->getSwapchainImagesKHR(*m_swapChain);
 
     SPDLOG_DEBUG("Got {} swap chain images", m_swapChainImages.size());
 
@@ -1505,7 +1505,7 @@ class Application {
     vk::Fence inFlightFence = m_inFlightFences[m_currentFrame];
     vk::Semaphore imageAvailableSemaphore =
         m_imageAvailableSemaphores[m_currentFrame];
-    vk::SwapchainKHR swapChain = m_swapChain;
+    vk::SwapchainKHR swapChain = *m_swapChain;
     vk::CommandBuffer commandBuffer = m_commandBuffers[m_currentFrame];
     vk::Semaphore renderFinishedSemaphore =
         m_renderFinishedSemaphores[m_currentFrame];
@@ -1591,7 +1591,7 @@ class Application {
     m_device->free(m_depthImageMemory);
     m_swapChainFrameBuffers.clear();
     clearContainer(m_swapChainImageViews);
-    m_device->destroy(m_swapChain);
+    m_swapChain.reset();
   }
 
   void recreateSwapChain() {

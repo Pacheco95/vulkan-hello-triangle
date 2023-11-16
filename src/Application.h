@@ -81,7 +81,7 @@ class Application {
 
   vk::SurfaceKHR m_surface;
 
-  vk::RenderPass m_renderPass;
+  vk::UniqueRenderPass m_renderPass;
   vk::UniqueDescriptorPool m_descriptorPool;
   std::vector<vk::DescriptorSet> m_descriptorSets;
   vk::UniqueDescriptorSetLayout m_descriptorSetLayout;
@@ -205,7 +205,7 @@ class Application {
 
     m_graphicsPipeline.reset();
     m_pipelineLayout.reset();
-    m_device->destroyRenderPass(m_renderPass);
+    m_renderPass.reset();
 
     m_indexBuffer.reset();
     m_indexBufferMemory.reset();
@@ -594,7 +594,7 @@ class Application {
     renderPassInfo.dependencyCount = 1;
     renderPassInfo.pDependencies = &dependency;
 
-    m_renderPass = m_device->createRenderPass(renderPassInfo);
+    m_renderPass = m_device->createRenderPassUnique(renderPassInfo);
   }
 
   void createGraphicsPipeline() {
@@ -701,7 +701,7 @@ class Application {
     pipelineInfo.pColorBlendState = &colorBlending;
     pipelineInfo.pDynamicState = &dynamicState;
     pipelineInfo.layout = *m_pipelineLayout;
-    pipelineInfo.renderPass = m_renderPass;
+    pipelineInfo.renderPass = *m_renderPass;
     pipelineInfo.subpass = 0;
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
@@ -721,7 +721,7 @@ class Application {
 
       vk::FramebufferCreateInfo framebufferInfo{};
 
-      framebufferInfo.renderPass = m_renderPass;
+      framebufferInfo.renderPass = *m_renderPass;
       framebufferInfo.attachmentCount =
           static_cast<uint32_t>(attachments.size());
       framebufferInfo.pAttachments = attachments.data();
@@ -1411,7 +1411,7 @@ class Application {
 
     vk::RenderPassBeginInfo renderPassInfo{};
 
-    renderPassInfo.renderPass = m_renderPass;
+    renderPassInfo.renderPass = *m_renderPass;
     renderPassInfo.framebuffer = *m_swapChainFrameBuffers[imageIndex];
     renderPassInfo.renderArea.offset = vk::Offset2D{0, 0};
     renderPassInfo.renderArea.extent = m_swapChainExtent;

@@ -89,7 +89,7 @@ class Application {
   vk::UniquePipeline m_graphicsPipeline;
 
   std::vector<vk::UniqueFramebuffer> m_swapChainFrameBuffers;
-  vk::CommandPool m_commandPool;
+  vk::UniqueCommandPool m_commandPool;
   std::vector<vk::CommandBuffer> m_commandBuffers;
 
   std::vector<vk::UniqueSemaphore> m_imageAvailableSemaphores;
@@ -217,7 +217,7 @@ class Application {
     m_imageAvailableSemaphores.clear();
     m_inFlightFences.clear();
 
-    m_device->destroy(m_commandPool);
+    m_commandPool.reset();
 
     m_device.reset();
     m_instance.destroySurfaceKHR(m_surface);
@@ -743,7 +743,7 @@ class Application {
     poolInfo.flags = vk::CommandPoolCreateFlagBits::eResetCommandBuffer;
     poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
 
-    m_commandPool = m_device->createCommandPool(poolInfo);
+    m_commandPool = m_device->createCommandPoolUnique(poolInfo);
   }
 
   void copyBufferToImage(
@@ -1387,7 +1387,7 @@ class Application {
     m_commandBuffers.resize(Config::MAX_FRAMES_IN_FLIGHT);
 
     vk::CommandBufferAllocateInfo allocInfo{};
-    allocInfo.commandPool = m_commandPool;
+    allocInfo.commandPool = *m_commandPool;
     allocInfo.level = vk::CommandBufferLevel::ePrimary;
     allocInfo.commandBufferCount =
         static_cast<uint32_t>(m_commandBuffers.size());
@@ -1674,7 +1674,7 @@ class Application {
   vk::CommandBuffer beginSingleTimeCommands() {
     vk::CommandBufferAllocateInfo allocInfo{};
     allocInfo.level = vk::CommandBufferLevel::ePrimary;
-    allocInfo.commandPool = m_commandPool;
+    allocInfo.commandPool = *m_commandPool;
     allocInfo.commandBufferCount = 1;
 
     vk::CommandBuffer commandBuffer;
@@ -1700,7 +1700,7 @@ class Application {
     PASS m_graphicsQueue.submit(1, &submitInfo, VK_NULL_HANDLE);
     m_graphicsQueue.waitIdle();
 
-    m_device->freeCommandBuffers(m_commandPool, 1, &commandBuffer);
+    m_device->freeCommandBuffers(*m_commandPool, 1, &commandBuffer);
   }
 
   void transitionImageLayout(

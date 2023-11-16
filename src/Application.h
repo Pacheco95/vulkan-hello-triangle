@@ -185,14 +185,6 @@ class Application {
     m_device->waitIdle();
   }
 
-  template <typename T>
-  void clearContainer(T container) {
-    for (const auto& item : container) {
-      m_device->destroy(item);
-    }
-    container.clear();
-  }
-
   void cleanup() {
     cleanupSwapChain();
 
@@ -889,8 +881,7 @@ class Application {
     );
 
     void* data;
-    vk::Result ignored =
-        m_device->mapMemory(*stagingBufferMemory, 0, imageSize, {}, &data);
+    m_device->mapMemory(*stagingBufferMemory, 0, imageSize, {}, &data);
     memcpy(data, pixels, static_cast<size_t>(imageSize));
     m_device->unmapMemory(*stagingBufferMemory);
 
@@ -1180,8 +1171,7 @@ class Application {
     );
 
     void* data;
-    vk::Result ignored =
-        m_device->mapMemory(*stagingBufferMemory, {}, bufferSize, {}, &data);
+    m_device->mapMemory(*stagingBufferMemory, {}, bufferSize, {}, &data);
     memcpy(data, m_vertices.data(), (size_t)bufferSize);
     m_device->unmapMemory(*stagingBufferMemory);
 
@@ -1213,8 +1203,7 @@ class Application {
     );
 
     void* data;
-    vk::Result ignored =
-        m_device->mapMemory(*stagingBufferMemory, {}, bufferSize, {}, &data);
+    m_device->mapMemory(*stagingBufferMemory, {}, bufferSize, {}, &data);
     memcpy(data, m_indices.data(), (size_t)bufferSize);
     m_device->unmapMemory(*stagingBufferMemory);
 
@@ -1510,11 +1499,10 @@ class Application {
     vk::Semaphore renderFinishedSemaphore =
         *m_renderFinishedSemaphores[m_currentFrame];
 
-    vk::Result result;
-    result = m_device->waitForFences(1, &inFlightFence, VK_TRUE, UINT64_MAX);
+    m_device->waitForFences(1, &inFlightFence, VK_TRUE, UINT64_MAX);
 
     uint32_t imageIndex;
-    result = m_device->acquireNextImageKHR(
+    vk::Result result = m_device->acquireNextImageKHR(
         swapChain,
         UINT64_MAX,
         imageAvailableSemaphore,
@@ -1531,7 +1519,7 @@ class Application {
 
     updateUniformBuffer(m_currentFrame);
 
-    result = m_device->resetFences(1, &inFlightFence);
+    m_device->resetFences(1, &inFlightFence);
 
     commandBuffer.reset();
     recordCommandBuffer(commandBuffer, imageIndex);
@@ -1686,8 +1674,7 @@ class Application {
     allocInfo.commandBufferCount = 1;
 
     vk::CommandBuffer commandBuffer;
-    vk::Result ignored =
-        m_device->allocateCommandBuffers(&allocInfo, &commandBuffer);
+    m_device->allocateCommandBuffers(&allocInfo, &commandBuffer);
 
     vk::CommandBufferBeginInfo beginInfo{};
 
@@ -1706,7 +1693,7 @@ class Application {
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &commandBuffer;
 
-    vk::Result ignored = m_graphicsQueue.submit(1, &submitInfo, VK_NULL_HANDLE);
+    m_graphicsQueue.submit(1, &submitInfo, VK_NULL_HANDLE);
     m_graphicsQueue.waitIdle();
 
     m_device->freeCommandBuffers(m_commandPool, 1, &commandBuffer);

@@ -8,7 +8,7 @@ namespace engine {
 
 class ValidationLayer {
  public:
-  explicit ValidationLayer(vk::Instance& instance);
+  explicit ValidationLayer(vk::UniqueInstance& instance);
 
   virtual ~ValidationLayer();
 
@@ -18,7 +18,7 @@ class ValidationLayer {
   );
 
  private:
-  vk::Instance& m_instance;
+  vk::UniqueInstance& m_instance;
   vk::DebugUtilsMessengerEXT debugUtilsMessenger;
   static uint32_t s_errorsCount;
 

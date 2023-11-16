@@ -27,13 +27,13 @@ PFN_vkDestroyDebugUtilsMessengerEXT pfnVkDestroyDebugUtilsMessengerEXT;
 namespace engine {
 uint32_t ValidationLayer::s_errorsCount = 0;
 
-ValidationLayer::ValidationLayer(vk::Instance& instance)
+ValidationLayer::ValidationLayer(vk::UniqueInstance& instance)
     : m_instance(instance) {
   setupDebugMessenger();
 }
 
 ValidationLayer::~ValidationLayer() {
-  m_instance.destroyDebugUtilsMessengerEXT(debugUtilsMessenger);
+  m_instance->destroyDebugUtilsMessengerEXT(debugUtilsMessenger);
 
   if (s_errorsCount) {
     SPDLOG_ERROR("{} validation errors found", ValidationLayer::s_errorsCount);
@@ -62,7 +62,7 @@ bool ValidationLayer::checkLayers(
 void ValidationLayer::setupDebugMessenger() {
   pfnVkCreateDebugUtilsMessengerEXT =
       reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(
-          m_instance.getProcAddr("vkCreateDebugUtilsMessengerEXT")
+          m_instance->getProcAddr("vkCreateDebugUtilsMessengerEXT")
       );
 
   if (!pfnVkCreateDebugUtilsMessengerEXT) {
@@ -74,7 +74,7 @@ void ValidationLayer::setupDebugMessenger() {
 
   pfnVkDestroyDebugUtilsMessengerEXT =
       reinterpret_cast<PFN_vkDestroyDebugUtilsMessengerEXT>(
-          m_instance.getProcAddr("vkDestroyDebugUtilsMessengerEXT")
+          m_instance->getProcAddr("vkDestroyDebugUtilsMessengerEXT")
       );
 
   if (!pfnVkDestroyDebugUtilsMessengerEXT) {
@@ -99,7 +99,7 @@ void ValidationLayer::setupDebugMessenger() {
       {}, severityFlags, messageTypeFlags, &debugMessageFunc
   );
 
-  debugUtilsMessenger = m_instance.createDebugUtilsMessengerEXT(createInfo);
+  debugUtilsMessenger = m_instance->createDebugUtilsMessengerEXT(createInfo);
 }
 
 VkBool32 ValidationLayer::debugMessageFunc(

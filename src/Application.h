@@ -63,7 +63,7 @@ class Application {
   std::unique_ptr<Camera> m_camera;
   std::unique_ptr<Window> m_window;
 
-  vk::Instance m_instance;
+  vk::UniqueInstance m_instance;
   std::unique_ptr<ValidationLayer> m_validationLayer;
 
   vk::PhysicalDevice m_physicalDevice;
@@ -220,10 +220,10 @@ class Application {
     m_commandPool.reset();
 
     m_device.reset();
-    m_instance.destroySurfaceKHR(m_surface);
+    m_instance->destroySurfaceKHR(m_surface);
 
     m_validationLayer.reset();
-    m_instance.destroy();
+    m_instance.reset();
 
     m_camera.reset();
     m_window.reset();
@@ -245,7 +245,7 @@ class Application {
         {}, &appInfo, Config::VALIDATION_LAYERS, extensionNames
     );
 
-    m_instance = vk::createInstance(createInfo);
+    m_instance = vk::createInstanceUnique(createInfo);
   }
 
   void setupDebugMessenger() {
@@ -268,7 +268,7 @@ class Application {
   void createSurface() {
     VkSurfaceKHR surface;
     VkResult createSurfaceResult =
-        glfwCreateWindowSurface(m_instance, *m_window, nullptr, &surface);
+        glfwCreateWindowSurface(*m_instance, *m_window, nullptr, &surface);
 
     ABORT_ON_FAIL(
         vk::Result(createSurfaceResult), "Failed to create window surface"
@@ -278,7 +278,7 @@ class Application {
 
   void pickPhysicalDevice() {
     std::vector<vk::PhysicalDevice> devices =
-        m_instance.enumeratePhysicalDevices();
+        m_instance->enumeratePhysicalDevices();
 
     for (const auto& device : devices) {
       if (isDeviceSuitable(device, m_surface)) {

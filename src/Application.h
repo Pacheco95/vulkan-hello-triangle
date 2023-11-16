@@ -81,7 +81,7 @@ class Application {
   vk::UniqueDescriptorPool m_descriptorPool;
   std::vector<vk::DescriptorSet> m_descriptorSets;
   vk::DescriptorSetLayout m_descriptorSetLayout;
-  vk::PipelineLayout m_pipelineLayout;
+  vk::UniquePipelineLayout m_pipelineLayout;
   vk::Pipeline m_graphicsPipeline;
 
   std::vector<vk::UniqueFramebuffer> m_swapChainFrameBuffers;
@@ -214,7 +214,7 @@ class Application {
     m_device->destroy(m_descriptorSetLayout);
 
     m_device->destroy(m_graphicsPipeline);
-    m_device->destroy(m_pipelineLayout);
+    m_pipelineLayout.reset();
     m_device->destroyRenderPass(m_renderPass);
 
     m_indexBuffer.reset();
@@ -702,7 +702,7 @@ class Application {
     pipelineLayoutInfo.setLayoutCount = 1;
     pipelineLayoutInfo.pSetLayouts = &m_descriptorSetLayout;
 
-    m_pipelineLayout = m_device->createPipelineLayout(pipelineLayoutInfo);
+    m_pipelineLayout = m_device->createPipelineLayoutUnique(pipelineLayoutInfo);
 
     vk::GraphicsPipelineCreateInfo pipelineInfo{};
     pipelineInfo.stageCount = 2;
@@ -715,7 +715,7 @@ class Application {
     pipelineInfo.pDepthStencilState = &depthStencil;
     pipelineInfo.pColorBlendState = &colorBlending;
     pipelineInfo.pDynamicState = &dynamicState;
-    pipelineInfo.layout = m_pipelineLayout;
+    pipelineInfo.layout = *m_pipelineLayout;
     pipelineInfo.renderPass = m_renderPass;
     pipelineInfo.subpass = 0;
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
@@ -1475,7 +1475,7 @@ class Application {
 
     commandBuffer.bindDescriptorSets(
         vk::PipelineBindPoint::eGraphics,
-        m_pipelineLayout,
+        *m_pipelineLayout,
         0,
         1,
         &m_descriptorSets[m_currentFrame],

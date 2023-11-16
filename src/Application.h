@@ -70,7 +70,7 @@ class Application {
 
   vk::UniqueSwapchainKHR m_swapChain;
   std::vector<vk::Image> m_swapChainImages;
-  std::vector<vk::ImageView> m_swapChainImageViews;
+  std::vector<vk::UniqueImageView> m_swapChainImageViews;
 
   vk::Format m_swapChainImageFormat;
   vk::Extent2D m_swapChainExtent;
@@ -112,18 +112,18 @@ class Application {
   vk::Image m_textureImage;
   vk::DeviceMemory m_textureImageMemory;
 
-  vk::ImageView m_textureImageView;
+  vk::UniqueImageView m_textureImageView;
   vk::Sampler m_textureSampler;
 
   vk::Image m_depthImage;
   vk::DeviceMemory m_depthImageMemory;
-  vk::ImageView m_depthImageView;
+  vk::UniqueImageView m_depthImageView;
 
   vk::SampleCountFlagBits m_msaaSamples = vk::SampleCountFlagBits::e1;
 
   vk::Image m_colorImage;
   vk::DeviceMemory m_colorImageMemory;
-  vk::ImageView m_colorImageView;
+  vk::UniqueImageView m_colorImageView;
 
   void initWindow() {
     m_window = std::make_unique<Window>(
@@ -194,7 +194,7 @@ class Application {
     cleanupSwapChain();
 
     m_device->destroy(m_textureSampler);
-    m_device->destroy(m_textureImageView);
+    m_textureImageView.reset();
 
     m_device->destroy(m_textureImage);
     m_device->free(m_textureImageMemory);
@@ -505,13 +505,13 @@ class Application {
     m_swapChainImageViews.reserve(m_swapChainImages.size());
 
     for (auto& swapChainImage : m_swapChainImages) {
-      vk::ImageView view = createImageView(
+      vk::UniqueImageView view = createImageView(
           swapChainImage,
           m_swapChainImageFormat,
           vk::ImageAspectFlagBits::eColor,
           1
       );
-      m_swapChainImageViews.emplace_back(view);
+      m_swapChainImageViews.emplace_back(std::move(view));
     }
   }
 
@@ -720,7 +720,7 @@ class Application {
 
     for (const auto& imageView : m_swapChainImageViews) {
       std::array<vk::ImageView, 3> attachments = {
-          m_colorImageView, m_depthImageView, imageView};
+          *m_colorImageView, *m_depthImageView, *imageView};
 
       vk::FramebufferCreateInfo framebufferInfo{};
 
@@ -793,9 +793,9 @@ class Application {
         m_colorImageMemory
     );
 
-    m_colorImageView = vk::ImageView(createImageView(
+    m_colorImageView = createImageView(
         m_colorImage, colorFormat, vk::ImageAspectFlagBits::eColor, 1
-    ));
+    );
   }
 
   void createDepthResources() {
@@ -814,9 +814,9 @@ class Application {
         m_depthImageMemory
     );
 
-    m_depthImageView = vk::ImageView(createImageView(
+    m_depthImageView = createImageView(
         m_depthImage, depthFormat, vk::ImageAspectFlagBits::eDepth, 1
-    ));
+    );
   }
 
   vk::Format findSupportedFormat(
@@ -1110,15 +1110,15 @@ class Application {
   }
 
   void createTextureImageView() {
-    m_textureImageView = vk::ImageView(createImageView(
+    m_textureImageView = createImageView(
         m_textureImage,
         vk::Format::eR8G8B8A8Srgb,
         vk::ImageAspectFlagBits::eColor,
         m_mipLevels
-    ));
+    );
   }
 
-  vk::ImageView createImageView(
+  vk::UniqueImageView createImageView(
       vk::Image image,
       vk::Format format,
       vk::ImageAspectFlags aspectFlags,
@@ -1134,9 +1134,7 @@ class Application {
     viewInfo.subresourceRange.baseArrayLayer = 0;
     viewInfo.subresourceRange.layerCount = 1;
 
-    vk::ImageView imageView = m_device->createImageView(viewInfo);
-
-    return imageView;
+    return m_device->createImageViewUnique(viewInfo);
   }
 
   void createTextureSampler() {
@@ -1306,7 +1304,7 @@ class Application {
 
       vk::DescriptorImageInfo imageInfo{};
       imageInfo.imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
-      imageInfo.imageView = m_textureImageView;
+      imageInfo.imageView = *m_textureImageView;
       imageInfo.sampler = m_textureSampler;
 
       std::array<vk::WriteDescriptorSet, 2> descriptorWrites{};
@@ -1582,15 +1580,15 @@ class Application {
   }
 
   void cleanupSwapChain() {
-    m_device->destroy(m_colorImageView);
+    m_colorImageView.reset();
     m_device->destroy(m_colorImage);
     m_device->free(m_colorImageMemory);
 
-    m_device->destroy(m_depthImageView);
+    m_depthImageView.reset();
     m_device->destroy(m_depthImage);
     m_device->free(m_depthImageMemory);
     m_swapChainFrameBuffers.clear();
-    clearContainer(m_swapChainImageViews);
+    m_swapChainImageViews.clear();
     m_swapChain.reset();
   }
 
